@@ -83,7 +83,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
                 modules[1].prepareToCalibrate(),
                 modules[2].prepareToCalibrate(),
                 modules[3].prepareToCalibrate()
-            ).withName("Prepare to calibrate");
+            ).andThen(run(() -> {})).withName("Prepare to calibrate");
         }
 
         public void drive(ChassisSpeeds  chassisSpeeds){

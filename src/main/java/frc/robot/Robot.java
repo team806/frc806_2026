@@ -66,8 +66,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    (new DriveFieldRelative(m_robotContainer.drivetrain, m_robotContainer.DriveController)).schedule();
   }
 
   @Override

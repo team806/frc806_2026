@@ -31,8 +31,8 @@ public class RobotContainer {
    //Trigger xButton = DriveController.x();  
   //Trigger yButton = DriveController.y();  
   //Trigger bButton = DriveController.b();  
-  //Trigger ltrigger = DriveController.leftTrigger();
-  //Trigger rtrigger = DriveController.rightTrigger();
+  Trigger driverLtrigger = DriveController.leftTrigger();
+  Trigger driverRtrigger = DriveController.rightTrigger();
   //Trigger noteAquired = new Trigger(IntakeSubsystem.getInstance()::getHasNote);
   //Trigger dPadUp = DriveController.povUp();
   //Trigger dPadDown = DriveController.povDown();
@@ -74,7 +74,7 @@ public class RobotContainer {
   private void configureBindings() {
   //drivetrain.setDefaultCommand(new DriveFieldRelative(drivetrain, DriveController));
 
-  DriverX.onTrue(drivetrain.prepareToCalibrate());
+  driverLtrigger.and(driverRtrigger).onTrue(drivetrain.prepareToCalibrate().until(DriverX::getAsBoolean));
   DriverY.onTrue(drivetrain.calibrate());
   
   manualUp.whileTrue(elevator.manualUp());
@@ -97,7 +97,6 @@ public class RobotContainer {
   lb.whileTrue(processor.manualUp());
   x.whileTrue(processor.manualIn());
   b.whileTrue(processor.manualOut());
-
 
   DriverDpadUp.whileTrue(climber.climbCommand());
   DriverDpadDn.whileTrue(climber.releaseCommand());
