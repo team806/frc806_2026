@@ -13,6 +13,7 @@ public class Constants {
         new Translation2d(0.29845,-0.29845),  //rear left   --
         new Translation2d(0.29845,0.29845)  //rear right  +-
     };
+
     //velocity constranints for swerve desaturate
     public static final double DriveBaseRadius = 0.42207203769;
     public static final double attainableMaxModuleSpeedMPS = 4.572;
@@ -24,24 +25,24 @@ public class Constants {
     public static double controllerDeadband = 0.15; 
 
     public interface Modules{
-            public static final double SpeedKP = 0.001, SpeedKI = 0, SpeedKD = 0.0005;
-            public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
+        public static final double SpeedKP = 0.001, SpeedKI = 0, SpeedKD = 0.0005;
+        public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
         
-            public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
-			public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
-            // public static final double FrontLeftEncoderOffset = 0;
+        public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
+        public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
+        // public static final double FrontLeftEncoderOffset = 0;
 
-            public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
-            public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
-            // public static final double FrontRightEncoderOffset = 0;
+        public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
+        public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
+        // public static final double FrontRightEncoderOffset = 0;
 
-            public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
-            public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
-            // public static final double RearLeftEncoderOffset = 0;
+        public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
+        public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
+        // public static final double RearLeftEncoderOffset = 0;
 
-            public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
-            public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
-            // public static final double RearRightEncoderOffset = 0;
+        public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
+        public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
+        // public static final double RearRightEncoderOffset = 0;
 
         swerveModule[] moduleArray = new swerveModule[] {
             new swerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID,FrontRightEncoderOffset),
@@ -51,8 +52,8 @@ public class Constants {
         };
         
     }
-                //TODO not really a todo, but i had to name it this way or java got mad at me
-    public interface Pconstants{ //TODO figure out the real values for this section 
+
+    public interface Pconstants{
 
         public static final double IntakeSpeed = 0;
         public static final double ShootSpeed = 0;
@@ -84,10 +85,8 @@ public class Constants {
     }
 
     public interface Shooter{
-
         public static final int aID = 13,bID = 14;
 		public static final double MaxSpeed = 1.00;//percent
-        
     }
 
     public interface Climber{
@@ -120,8 +119,7 @@ public class Constants {
             public static final double L3PrepPosition = 6850;
             public static final double L4FastPrepPosition = 0;
             public static final double L4PrepPosition = 7130;
-            public static final double L4ReleasePosition = 0;
-            
+            public static final double L4ReleasePosition = 0; 
         }
 
 
@@ -156,7 +154,6 @@ public class Constants {
             public static final double ReleaseTime = 1;
         }
 
-    
     }
 
     public interface Motion {
@@ -165,5 +162,3 @@ public class Constants {
     }
 
 }
-
-
