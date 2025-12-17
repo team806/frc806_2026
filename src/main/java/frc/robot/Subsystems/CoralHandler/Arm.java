@@ -44,7 +44,7 @@ public class Arm extends SubsystemBase {
     public Command manualIn() {
         return runEnd(() -> armMotor.set(-0.2), () -> armMotor.set(-0.04)).withName("manualIn");
     }
-
+    
     public void stop() {
         armMotor.set(0);
     }
