@@ -25,7 +25,7 @@ public class swerveModule extends SubsystemBase{
     SparkMax driveMotor;
     int driveMotorID;
     SparkAbsoluteEncoder driveMotorEncoder;
-    SparkClosedLoopController  driveController;
+    SparkClosedLoopController driveController;
     //steer
     SparkMax steerMotor;
     SparkAbsoluteEncoder steerMotorEncoder;
@@ -43,73 +43,74 @@ public class swerveModule extends SubsystemBase{
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
 
     //CONSTRUCTOR//
-        public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
-            this.driveMotorID = driveMotorID;
+    public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
+        this.driveMotorID = driveMotorID;
 
-            //drive motor 
-            driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
-            SparkMaxConfig driveConfig = new SparkMaxConfig();
-            driveConfig.smartCurrentLimit(40);
-            driveConfig.idleMode(IdleMode.kBrake);
-            driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        //drive motor 
+        driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
+        SparkMaxConfig driveConfig = new SparkMaxConfig();
+        driveConfig.smartCurrentLimit(40);
+        driveConfig.idleMode(IdleMode.kBrake);
+        driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-            //drive encoder
-            driveMotorEncoder = driveMotor.getAbsoluteEncoder();
-            //steer motor
-            steerMotor = new SparkMax(steerMotorID, MotorType.kBrushless);
-            SparkMaxConfig steerConfig = new SparkMaxConfig();
-            steerConfig.idleMode(IdleMode.kBrake);
-            steerConfig.smartCurrentLimit(20);
-            steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-            // module encoder
-            moduleEncoder = new CANcoder(encoderID,"Default Name");
-            this.encoderOffsetRotations = encoderOffsetRotations;
+        //drive encoder
+        driveMotorEncoder = driveMotor.getAbsoluteEncoder();
+        //steer motor
+        steerMotor = new SparkMax(steerMotorID, MotorType.kBrushless);
+        SparkMaxConfig steerConfig = new SparkMaxConfig();
+        steerConfig.idleMode(IdleMode.kBrake);
+        steerConfig.smartCurrentLimit(20);
+        steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        // module encoder
+        moduleEncoder = new CANcoder(encoderID,"Default Name");
+        this.encoderOffsetRotations = encoderOffsetRotations;
 
-            //controllers
-            //driveController = driveMotor.getPIDController();
-            //driveController.setP(Constants.Modules.SpeedKP);
-            //driveController.setI(Constants.Modules.SpeedKI);
-            //driveController.setD(Constants.Modules.SpeedKD);
+        //controllers
+        //driveController = driveMotor.getPIDController();
+        //driveController.setP(Constants.Modules.SpeedKP);
+        //driveController.setI(Constants.Modules.SpeedKI);
+        //driveController.setD(Constants.Modules.SpeedKD);
 
-            steerController = new PIDController(Constants.Modules.SteerKP, Constants.Modules.SteerKI, Constants.Modules.SteerKD);
-            steerController.enableContinuousInput(0, 1);
+        steerController = new PIDController(Constants.Modules.SteerKP, Constants.Modules.SteerKI, Constants.Modules.SteerKD);
+        steerController.enableContinuousInput(0, 1);
 
-        }
+    }
 
     //DRIVE//
-        public void setTargetState(SwerveModuleState targetState, boolean isCosineCompensated) {
-            //PID experement
-            //  steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
-            //  driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
+    public void setTargetState(SwerveModuleState targetState, boolean isCosineCompensated) {
+        //PID experement
+        //steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
+        //driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
 
-            // FUNCTIONING
-            double currentAngle = getModuleAngRotations();
-            steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
-            if (isCosineCompensated) {
-                targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
-            }
-            driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
+        // FUNCTIONING
+        double currentAngle = getModuleAngRotations();
+        steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
+        if (isCosineCompensated) {
+            targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
         }
+        driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
+    }
+    
     //FEEDBACK//
-        public void periodic() {
-            SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
-        }
+    public void periodic() {
+        SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
+    }
 
-        public double getModuleAngRotations(){
-            return moduleEncoder.getAbsolutePosition().getValueAsDouble() - encoderOffsetRotations;
-        }
-        
-        public SwerveModulePosition getModulePosition() {
-            return new SwerveModulePosition(
-                driveMotorEncoder.getPosition(), //FIXME i broke this sorry
-                Rotation2d.fromRotations(getModuleAngRotations())
-            );  
-        }
+    public double getModuleAngRotations(){
+        return moduleEncoder.getAbsolutePosition().getValueAsDouble() - encoderOffsetRotations;
+    }
+    
+    public SwerveModulePosition getModulePosition() {
+        return new SwerveModulePosition(
+            driveMotorEncoder.getPosition(), //FIXME i broke this sorry
+            Rotation2d.fromRotations(getModuleAngRotations())
+        );  
+    }
 
-        public SwerveModuleState getSwerveModuleState() {
-            return new SwerveModuleState(
-                driveMotorEncoder.getVelocity(), //FIXME i broke this sorry
-                Rotation2d.fromRotations(getModuleAngRotations()));
-        }
-    ////
+    public SwerveModuleState getSwerveModuleState() {
+        return new SwerveModuleState(
+            driveMotorEncoder.getVelocity(), //FIXME i broke this sorry
+            Rotation2d.fromRotations(getModuleAngRotations()));
+    }
+
 }
