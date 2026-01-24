@@ -7,43 +7,42 @@ import frc.robot.Constants;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 
 public class DriveFieldRelative extends Command {
-  private final DrivetrainSubsystem swerve;
-  private final CommandXboxController controller;
-  double translationPow = Constants.Drivetrain.TranslationPow;
-  double rotationPow = Constants.Drivetrain.RotationPow;
-  /**
-   * Creates a new DriveFieldRelative.
-   *
-   * @param drive The drive subsystem this command wil run on.
-   * @param driveController The controller used for running the robot
-   */
-  public DriveFieldRelative(DrivetrainSubsystem drive, CommandXboxController driveController) {
-    swerve = drive;
-    controller = driveController;
-    addRequirements(swerve);
-
-  }
-
-  @Override
-  public String getName() {
-    return "DriveFieldRelative";
-  }
-
-  @Override
-  public void execute() {
-     if(controller.start().getAsBoolean()){
-      swerve.resetGyro();
+    private final DrivetrainSubsystem swerve;
+    private final CommandXboxController controller;
+    double translationPow = Constants.Drivetrain.TranslationPow;
+    double rotationPow = Constants.Drivetrain.RotationPow;
+    /**
+     * Creates a new DriveFieldRelative.
+     *
+     * @param drive The drive subsystem this command wil run on.
+     * @param driveController The controller used for running the robot
+     */
+    public DriveFieldRelative(DrivetrainSubsystem drive, CommandXboxController driveController) {
+        swerve = drive;
+        controller = driveController;
+        addRequirements(swerve);
     }
 
+    @Override
+    public String getName() {
+        return "DriveFieldRelative";
+    }
+
+    @Override
+    public void execute() {
+        if(controller.start().getAsBoolean()){
+            swerve.resetGyro();
+        }
 
     double x = controller.getLeftX(), y = controller.getLeftY(), theta = controller.getRightX();
     
     if (Math.hypot(x, y) < Constants.controllerDeadband) {
-      x = 0;
-      y = 0;
+        x = 0;
+        y = 0;
     }
+
     if (Math.abs(theta) < Constants.controllerDeadband) {
-      theta = 0.0;
+        theta = 0.0;
     }
 
     x = (x > 0) ? Math.abs(Math.pow(x, translationPow)) : -Math.abs(Math.pow(x, translationPow));
