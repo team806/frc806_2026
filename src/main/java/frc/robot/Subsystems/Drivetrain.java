@@ -19,11 +19,11 @@ import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class DrivetrainSubsystem extends SubsystemBase{
+public class Drivetrain extends SubsystemBase {
 
     ADIS16470_IMU IMU;
     //Pigeon2 IMU;
-    public swerveModule[] modules;
+    public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
     SwerveDriveOdometry odometry;
     ChassisSpeeds m_chassisSpeeds;
@@ -34,8 +34,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
     SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
     private final StructArrayPublisher<SwerveModuleState> statePublisher;
     
-    //CONSTRUCTOR//
-    public DrivetrainSubsystem(swerveModule[] modules) {
+    public Drivetrain(SwerveModule[] modules) {
         IMU = new ADIS16470_IMU();
         //IMU = new Pigeon2(Constants.PigeonID,"Default Name");
         this.modules = modules;
@@ -44,7 +43,6 @@ public class DrivetrainSubsystem extends SubsystemBase{
         statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
     }
 
-    //GYRO//
     public Rotation2d getGyroscopeRotation() {
         //return Rotation2d.fromDegrees(IMU.get());
     
@@ -104,7 +102,6 @@ public class DrivetrainSubsystem extends SubsystemBase{
         //FIXME: The optimize method is deprecated.
     }
 
-    //FEEDBACK//
     public SwerveModulePosition[] getModulePositions(){
         return new SwerveModulePosition[] {modules[0].getModulePosition(),modules[1].getModulePosition(),modules[2].getModulePosition(),modules[3].getModulePosition()};
     }
@@ -116,25 +113,5 @@ public class DrivetrainSubsystem extends SubsystemBase{
             modules[2].getSwerveModuleState(),
             modules[3].getSwerveModuleState()
         );
-    }
-
-    @Override
-    public void periodic() {
-        odometry.update(getGyroscopeRotation(), getModulePositions());
-        statePublisher.set(new SwerveModuleState[]{
-            modules[0].getSwerveModuleState(),
-            modules[1].getSwerveModuleState(),
-            modules[2].getSwerveModuleState(),
-            modules[3].getSwerveModuleState()
-        });
-    }
-    
-    public Command getAutonomousCommand() {
-        //return m_chooser.getSelected();
-        return Commands.deadline(
-            waitSeconds(1.5),
-            Commands.run(() -> {  drive(new ChassisSpeeds(3, 0, 0)); })
-        )
-        .andThen(() -> { drive(new ChassisSpeeds(0, 0, 0)); }).withName("Auton");
     }
 }

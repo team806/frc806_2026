@@ -16,16 +16,7 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        enableLiveWindowInTest(true);
         m_robotContainer = new RobotContainer();
-
-        //CameraServer.startAutomaticCapture();
-
-        //processor = new Processor();
-        
-        // Initialize here to retrieve the details regarding the gyroscope.
-        // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
-        // impact the driving and autonomous of the robot.
     }
 
     @Override
@@ -44,11 +35,6 @@ public class Robot extends TimedRobot {
 
     @Override
     public void autonomousInit() {
-        m_autonomousCommand = m_robotContainer.drivetrain.getAutonomousCommand();
-
-        if (m_autonomousCommand != null) {
-            m_autonomousCommand.schedule();
-        }
     }
 
     @Override
