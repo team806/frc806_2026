@@ -4,10 +4,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
-import frc.robot.Subsystems.DrivetrainSubsystem;
+import frc.robot.Subsystems.Drivetrain;
 
 public class DriveFieldRelative extends Command {
-    private final DrivetrainSubsystem swerve;
+    private final Drivetrain swerve;
     private final CommandXboxController controller;
     double translationPow = Constants.Drivetrain.TranslationPow;
     double rotationPow = Constants.Drivetrain.RotationPow;
@@ -17,7 +17,7 @@ public class DriveFieldRelative extends Command {
      * @param drive The drive subsystem this command wil run on.
      * @param driveController The controller used for running the robot
      */
-    public DriveFieldRelative(DrivetrainSubsystem drive, CommandXboxController driveController) {
+    public DriveFieldRelative(Drivetrain drive, CommandXboxController driveController) {
         swerve = drive;
         controller = driveController;
         addRequirements(swerve);
