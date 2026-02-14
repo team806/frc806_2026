@@ -93,39 +93,38 @@ public class SwerveModule extends SubsystemBase{
         }
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
+
+    public Command prepareToCalibrate() {
+        return runOnce(() -> {
+            SparkMaxConfig idleConfig = new SparkMaxConfig();
+            idleConfig.smartCurrentLimit(40);
+            idleConfig.idleMode(IdleMode.kCoast);
+            steerMotor.configure(idleConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+            steerMotor.set(0);
+        }).withName("Prepare to calibrate");
+    }
     
-    //FEEDBACK//
-public Command calibrate() {
-            return runOnce(() -> {
-                SparkMaxConfig brakeConfig = new SparkMaxConfig();
-                brakeConfig.smartCurrentLimit(40);
-                brakeConfig.idleMode(IdleMode.kBrake);
-                steerMotor.configure(brakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    public Command calibrate() {
+        return runOnce(() -> {
+            SparkMaxConfig brakeConfig = new SparkMaxConfig();
+            brakeConfig.smartCurrentLimit(40);
+            brakeConfig.idleMode(IdleMode.kBrake);
+            steerMotor.configure(brakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
 
-                var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
-                Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
-            }).withName("Calibrate");
-        }
+            var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
+            Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
+        }).withName("Calibrate");
+    }
 
-        public Command prepareToCalibrate() {
-            return runOnce(() -> {
-                SparkMaxConfig idleConfig = new SparkMaxConfig();
-                idleConfig.smartCurrentLimit(40);
-                idleConfig.idleMode(IdleMode.kCoast);
-                steerMotor.configure(idleConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
-                steerMotor.set(0);
-            }).withName("Prepare to calibrate");
-        }
+    public void periodic() {
+        SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
+    }
 
-        public void periodic() {
-            SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
-        }
+    public double getModuleAngRotations(){
+        return moduleEncoder.getAbsolutePosition().getValueAsDouble() - Preferences.getDouble(EncoderPreferenceKey + encoderID, 0);
+    }
 
-        public double getModuleAngRotations(){
-            return moduleEncoder.getAbsolutePosition().getValueAsDouble() - Preferences.getDouble(EncoderPreferenceKey + encoderID, 0);
-        }
-
-public SwerveModulePosition getModulePosition() {
+    public SwerveModulePosition getModulePosition() {
         return new SwerveModulePosition(
             driveMotorEncoder.getPosition(), //FIXME i broke this sorry
             Rotation2d.fromRotations(getModuleAngRotations())
