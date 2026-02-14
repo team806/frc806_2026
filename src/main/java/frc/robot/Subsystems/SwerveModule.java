@@ -1,14 +1,11 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,13 +19,10 @@ import frc.robot.Constants;
 public class SwerveModule extends SubsystemBase{
 
     //drive 
-    SparkMax driveMotor;
+    TalonFX driveMotor;
     int driveMotorID;
-    SparkAbsoluteEncoder driveMotorEncoder;
-    SparkClosedLoopController driveController;
     //steer
-    SparkMax steerMotor;
-    SparkAbsoluteEncoder steerMotorEncoder;
+    TalonFX steerMotor;
     PIDController steerController;
     //module encoder 
     CANcoder moduleEncoder;
@@ -47,22 +41,23 @@ public class SwerveModule extends SubsystemBase{
         this.driveMotorID = driveMotorID;
 
         //drive motor 
-        driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
-        SparkMaxConfig driveConfig = new SparkMaxConfig();
-        driveConfig.smartCurrentLimit(40);
-        driveConfig.idleMode(IdleMode.kBrake);
-        driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        driveMotor = new TalonFX(driveMotorID);
+        var config = new TalonFXConfiguration();
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 40;
+        driveMotor.getConfigurator().apply(config);
 
-        //drive encoder
-        driveMotorEncoder = driveMotor.getAbsoluteEncoder();
         //steer motor
-        steerMotor = new SparkMax(steerMotorID, MotorType.kBrushless);
-        SparkMaxConfig steerConfig = new SparkMaxConfig();
-        steerConfig.idleMode(IdleMode.kBrake);
-        steerConfig.smartCurrentLimit(20);
-        steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        steerMotor = new TalonFX(steerMotorID);
+        var steerConfig = new TalonFXConfiguration();
+        config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        config.CurrentLimits.SupplyCurrentLimitEnable = true;
+        config.CurrentLimits.SupplyCurrentLimit = 20;
+        steerMotor.getConfigurator().apply(config);
+        
         // module encoder
-        moduleEncoder = new CANcoder(encoderID,"Default Name");
+        moduleEncoder = new CANcoder(encoderID, new CANBus("*"));
         this.encoderOffsetRotations = encoderOffsetRotations;
 
         //controllers
@@ -102,14 +97,14 @@ public class SwerveModule extends SubsystemBase{
     
     public SwerveModulePosition getModulePosition() {
         return new SwerveModulePosition(
-            driveMotorEncoder.getPosition(), //FIXME i broke this sorry
+            driveMotor.getPosition(true).getValueAsDouble(),
             Rotation2d.fromRotations(getModuleAngRotations())
         );  
     }
 
     public SwerveModuleState getSwerveModuleState() {
         return new SwerveModuleState(
-            driveMotorEncoder.getVelocity(), //FIXME i broke this sorry
+            driveMotor.getVelocity(true).getValueAsDouble(),
             Rotation2d.fromRotations(getModuleAngRotations()));
     }
 

@@ -8,10 +8,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.DrivetrainSubsystem;
+import frc.robot.Subsystems.Drivetrain;
 
 public class RobotContainer {
-    public final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem(Constants.Modules.moduleArray);
+    public final Drivetrain drivetrain = new Drivetrain(Constants.Modules.moduleArray);
 
     public CommandXboxController DriveController = new CommandXboxController(0);
     CommandXboxController coDriveController = new CommandXboxController(1);
