@@ -19,7 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class swerveModule extends SubsystemBase{
+public class SwerveModule extends SubsystemBase{
 
     //drive 
     SparkMax driveMotor;
@@ -43,7 +43,7 @@ public class swerveModule extends SubsystemBase{
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
 
     //CONSTRUCTOR//
-    public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
+    public SwerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
         this.driveMotorID = driveMotorID;
 
         //drive motor 
