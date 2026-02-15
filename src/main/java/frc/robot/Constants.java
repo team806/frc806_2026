@@ -7,16 +7,17 @@ public class Constants {
 
     public static final double Delta = 1e-2;
     
+    // 25.25 inches wide, 18.16 inches deep
     public static final Translation2d[] moduleLocations = {
-        new Translation2d(-0.29845,0.29845),  //front right ++
-        new Translation2d(-0.29845,-0.29845), //front left  -+
-        new Translation2d(0.29845,-0.29845),  //rear left   --
-        new Translation2d(0.29845,0.29845)  //rear right  +-
+        new Translation2d(-0.320675, 0.230505),  //front right +-
+        new Translation2d(-0.320675, -0.230505), //front left ++
+        new Translation2d(0.320675, -0.230505),  //rear left -+
+        new Translation2d(0.320675, 0.230505)  //rear right --
     };
 
     //velocity constranints for swerve desaturate
-    public static final double DriveBaseRadius = 0.42207203769;
-    public static final double attainableMaxModuleSpeedMPS = 4.572;
+    public static final double DriveBaseRadius = Math.sqrt(Math.pow(moduleLocations[1].getX(), 2) + Math.pow(moduleLocations[1].getY(), 2));
+    public static final double attainableMaxModuleSpeedMPS = 4.572; // 15 feet/s
     public static final double attainableMaxTranslationalSpeedMPS = attainableMaxModuleSpeedMPS;
     public static final double attainableMaxRotationalVelocityRPS = attainableMaxModuleSpeedMPS/DriveBaseRadius;
 
