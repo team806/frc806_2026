@@ -1,5 +1,7 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.CANBus;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -9,20 +11,26 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj.ADIS16470_IMU;
-import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+// import edu.wpi.first.wpilibj.ADIS16470_IMU;
+// import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
+import frc.robot.Commands.DriveFieldRelative;
 
 public class Drivetrain extends SubsystemBase {
 
-    ADIS16470_IMU IMU;
-    //Pigeon2 IMU;
+    // ADIS16470_IMU IMU;
+    Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
     SwerveDriveOdometry odometry;
@@ -33,60 +41,87 @@ public class Drivetrain extends SubsystemBase {
     SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
     SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
     private final StructArrayPublisher<SwerveModuleState> statePublisher;
+
+    private final Alert calibratingAlert = new Alert("Calibrating steering motors", AlertType.kInfo);
     
-    public Drivetrain(SwerveModule[] modules) {
-        IMU = new ADIS16470_IMU();
-        //IMU = new Pigeon2(Constants.PigeonID,"Default Name");
+    public Drivetrain(SwerveModule[] modules, CommandXboxController controller) {
+        // IMU = new ADIS16470_IMU();
+        IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
         kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
         odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), getModulePositions());
         statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
+        setDefaultCommand(new DriveFieldRelative(this, controller));
+
+        SmartDashboard.putData(prepareToCalibrate());
+        SmartDashboard.putData(calibrate());
+        SmartDashboard.putData(this);
+
+        
     }
 
     public Rotation2d getGyroscopeRotation() {
         //return Rotation2d.fromDegrees(IMU.get());
     
-        return Rotation2d.fromDegrees(-IMU.getAngle(IMUAxis.kY));
-        // r*eturn Rotation2d.fromDegrees(IMU.getAngle());
+        // return Rotation2d.fromDegrees(-IMU.getAngle(IMUAxis.kY));
+        // return Rotation2d.fromDegrees(IMU.getAngle());
+        return Rotation2d.fromDegrees(IMU.getYaw().getValueAsDouble());
     }
 
-    public void calibrateGyro(){
-        IMU.calibrate();   
-     }
+    // public void calibrateGyro(){
+    //     IMU.calibrate();   
+    //  }
 
     public void resetGyro(){
-        IMU.reset();
+        // IMU.reset();
     }
 
-    //DRIVING//
-        public Command calibrate() {
-            return parallel(
-                modules[0].calibrate(),
-                modules[1].calibrate(),
-                modules[2].calibrate(),
-                modules[3].calibrate()
-            ).withName("Calibrate");
+    public Command getInitialCommand() {
+        if (Preferences.getBoolean("Drivetrain.isPrepartingToCalibrate", true)) {
+            return prepareToCalibrate();
+        } else {
+            return getDefaultCommand();
         }
+    }
 
-        public Command prepareToCalibrate() {
-            return parallel(
-                modules[0].prepareToCalibrate(),
-                modules[1].prepareToCalibrate(),
-                modules[2].prepareToCalibrate(),
-                modules[3].prepareToCalibrate()
-            ).andThen(run(() -> {})).withName("Prepare to calibrate");
-        }
+    private final Command prepareToCalibrateCommand = parallel(
+            runOnce(() -> {
+                Preferences.setBoolean("Drivetrain.isPrepartingToCalibrate", true);
+                calibratingAlert.set(true);
+            }),
+            modules[0].prepareToCalibrate(),
+            modules[1].prepareToCalibrate(),
+            modules[2].prepareToCalibrate(),
+            modules[3].prepareToCalibrate()
+        ).andThen(run(() -> {})).withName("Prepare to calibrate");
+
+    public Command prepareToCalibrate() {
+        return prepareToCalibrateCommand;
+    }
+    
+    public Command calibrate() {
+        return parallel(
+            runOnce(() -> {
+                Preferences.setBoolean("Drivetrain.isPrepartingToCalibrate", false);
+                calibratingAlert.set(false);
+            }),
+            modules[0].calibrate(),
+            modules[1].calibrate(),
+            modules[2].calibrate(),
+            modules[3].calibrate()
+        ).onlyIf(() -> prepareToCalibrate().isScheduled()).withName("Calibrate");
+    }
 
     public void drive(ChassisSpeeds  chassisSpeeds){
         setModuleTargetStates(chassisSpeeds, true);
     }
 
-    public void driveFieldRelative(ChassisSpeeds  chassisSpeeds, boolean isCosineCompensated){
+    public void driveFieldRelative(ChassisSpeeds chassisSpeeds, boolean isCosineCompensated){
         chassisSpeeds.vxMetersPerSecond = translationXLimiter.calculate(chassisSpeeds.vxMetersPerSecond);
         chassisSpeeds.vyMetersPerSecond = translationYLimiter.calculate(chassisSpeeds.vyMetersPerSecond);
         chassisSpeeds.omegaRadiansPerSecond = rotationLimiter.calculate(chassisSpeeds.omegaRadiansPerSecond);
 
-        SmartDashboard.putNumber("gyro", getGyroscopeRotation().getDegrees());
+        // SmartDashboard.putNumber("gyro", getGyroscopeRotation().getDegrees());
 
         setModuleTargetStates(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroscopeRotation()), isCosineCompensated);
         // setModuleTargetStates(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroscopeRotation()));
