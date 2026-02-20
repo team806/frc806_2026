@@ -7,16 +7,17 @@ public class Constants {
 
     public static final double Delta = 1e-2;
     
+    // 25.25 inches wide, 18.16 inches deep
     public static final Translation2d[] moduleLocations = {
-        new Translation2d(-0.29845,0.29845),  //front right ++
-        new Translation2d(-0.29845,-0.29845), //front left  -+
-        new Translation2d(0.29845,-0.29845),  //rear left   --
-        new Translation2d(0.29845,0.29845)  //rear right  +-
+        new Translation2d(-0.320675, 0.230505),  //front right +-
+        new Translation2d(-0.320675, -0.230505), //front left ++
+        new Translation2d(0.320675, -0.230505),  //rear left -+
+        new Translation2d(0.320675, 0.230505)  //rear right --
     };
 
     //velocity constranints for swerve desaturate
-    public static final double DriveBaseRadius = 0.42207203769;
-    public static final double attainableMaxModuleSpeedMPS = 4.572;
+    public static final double DriveBaseRadius = Math.sqrt(Math.pow(moduleLocations[1].getX(), 2) + Math.pow(moduleLocations[1].getY(), 2));
+    public static final double attainableMaxModuleSpeedMPS = 4.572; // 15 feet/s
     public static final double attainableMaxTranslationalSpeedMPS = attainableMaxModuleSpeedMPS;
     public static final double attainableMaxRotationalVelocityRPS = attainableMaxModuleSpeedMPS/DriveBaseRadius;
 
@@ -29,26 +30,18 @@ public class Constants {
         public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
         
         public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
-        public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
-        // public static final double FrontLeftEncoderOffset = 0;
 
         public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
-        public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
-        // public static final double FrontRightEncoderOffset = 0;
 
         public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
-        public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
-        // public static final double RearLeftEncoderOffset = 0;
 
         public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
-        public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
-        // public static final double RearRightEncoderOffset = 0;
 
         SwerveModule[] moduleArray = new SwerveModule[] {
-            new SwerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID,FrontRightEncoderOffset),
-            new SwerveModule(FrontLeftDriveID, FrontLeftSteerID, FrontLeftEncoderID, FrontLeftEncoderOffset),
-            new SwerveModule(RearLeftDriveID, RearLeftSteerID, RearLeftEncoderID, RearLeftEncoderOffset),
-            new SwerveModule(RearRightDriveID, RearRightSteerID, RearRightEncoderID, RearRightEncoderOffset)
+            new SwerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID),
+            new SwerveModule(FrontLeftDriveID, FrontLeftSteerID, FrontLeftEncoderID),
+            new SwerveModule(RearLeftDriveID, RearLeftSteerID, RearLeftEncoderID),
+            new SwerveModule(RearRightDriveID, RearRightSteerID, RearRightEncoderID)
         };
         
     }
