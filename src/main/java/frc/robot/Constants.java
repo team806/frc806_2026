@@ -52,6 +52,8 @@ public class Constants {
 
         public static final double SlowFactor = 3;
         public static final double SlowFactorOffset = 1;
+
+        public static final double SteerMotorSlewRate = 100;
     }
 
     public interface Motion {
