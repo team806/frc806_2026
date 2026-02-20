@@ -30,6 +30,7 @@ import frc.robot.Commands.DriveFieldRelative;
 public class Drivetrain extends SubsystemBase {
 
     // ADIS16470_IMU IMU;
+    boolean isCalibrating;
     Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
@@ -84,8 +85,10 @@ public class Drivetrain extends SubsystemBase {
         }
     }
 
-    private final Command prepareToCalibrateCommand = parallel(
+    public Command prepareToCalibrate() {
+        return parallel(
             runOnce(() -> {
+                isCalibrating = true;
                 Preferences.setBoolean("Drivetrain.isPrepartingToCalibrate", true);
                 calibratingAlert.set(true);
             }),
@@ -93,10 +96,9 @@ public class Drivetrain extends SubsystemBase {
             modules[1].prepareToCalibrate(),
             modules[2].prepareToCalibrate(),
             modules[3].prepareToCalibrate()
-        ).andThen(run(() -> {})).withName("Prepare to calibrate");
-
-    public Command prepareToCalibrate() {
-        return prepareToCalibrateCommand;
+        ).andThen(run(() -> {
+            isCalibrating = false;
+        })).withName("Prepare to calibrate");
     }
     
     public Command calibrate() {
@@ -109,7 +111,7 @@ public class Drivetrain extends SubsystemBase {
             modules[1].calibrate(),
             modules[2].calibrate(),
             modules[3].calibrate()
-        ).onlyIf(() -> prepareToCalibrate().isScheduled()).withName("Calibrate");
+        ).onlyIf(() -> isCalibrating).withName("Calibrate");
     }
 
     public void drive(ChassisSpeeds  chassisSpeeds){
@@ -130,11 +132,10 @@ public class Drivetrain extends SubsystemBase {
     public void setModuleTargetStates(ChassisSpeeds chassisSpeeds, boolean isCosineCompensated) {
         SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(chassisSpeeds);
         SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Constants.attainableMaxModuleSpeedMPS);
-        modules[0].setTargetState(SwerveModuleState.optimize(targetStates[0], Rotation2d.fromRotations(modules[0].getModuleAngRotations())), isCosineCompensated);
-        modules[1].setTargetState(SwerveModuleState.optimize(targetStates[1], Rotation2d.fromRotations(modules[1].getModuleAngRotations())), isCosineCompensated);
-        modules[2].setTargetState(SwerveModuleState.optimize(targetStates[2], Rotation2d.fromRotations(modules[2].getModuleAngRotations())), isCosineCompensated);
-        modules[3].setTargetState(SwerveModuleState.optimize(targetStates[3], Rotation2d.fromRotations(modules[3].getModuleAngRotations())), isCosineCompensated);
-        //FIXME: The optimize method is deprecated.
+        for (int i = 0; i < modules.length; ++i) {
+            targetStates[i].optimize(Rotation2d.fromRotations(modules[i].getModuleAngRotations()));
+            modules[i].setTargetState(targetStates[i], isCosineCompensated);
+        }
     }
 
     public SwerveModulePosition[] getModulePositions(){
