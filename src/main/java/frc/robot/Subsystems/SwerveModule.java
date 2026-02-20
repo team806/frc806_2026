@@ -3,11 +3,11 @@ package frc.robot.Subsystems;
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -38,6 +38,7 @@ public class SwerveModule extends SubsystemBase{
     final double DRIVE_VELOCITY_CONVERSION = DRIVE_POSITION_CONVERSION / 60.0;
     final double STEER_POSITION_CONVERSION = 1;
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
+    private final SlewRateLimiter steerLimiter = new SlewRateLimiter(Constants.Drivetrain.SteerMotorSlewRate);
 
     public SwerveModule(int driveMotorID, int steerMotorID, int encoderID){
         this.driveMotorID = driveMotorID;
@@ -81,7 +82,8 @@ public class SwerveModule extends SubsystemBase{
 
         // FUNCTIONING
         double currentAngle = getModuleAngRotations();
-        steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
+        double steerMotorCommand = -steerController.calculate(currentAngle, targetState.angle.getRotations());
+        steerMotor.set(steerLimiter.calculate(steerMotorCommand));
         if (isCosineCompensated) {
             targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
         }
@@ -90,14 +92,10 @@ public class SwerveModule extends SubsystemBase{
 
     public Command prepareToCalibrate() {
         return runOnce(() -> {
-            var config = new TalonFXConfiguration();
-            config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-            steerMotor.getConfigurator().apply(config);
+            steerMotor.setNeutralMode(NeutralModeValue.Coast);
             steerMotor.set(0);
         }).finallyDo(() -> {
-            var config = new TalonFXConfiguration();
-            config.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-            steerMotor.getConfigurator().apply(config);
+            steerMotor.setNeutralMode(NeutralModeValue.Brake);
         }).withName("Prepare to calibrate");
     }
     
