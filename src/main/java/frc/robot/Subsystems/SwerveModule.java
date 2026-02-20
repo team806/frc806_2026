@@ -74,13 +74,11 @@ public class SwerveModule extends SubsystemBase{
 
     }
 
-    //DRIVE//
     public void setTargetState(SwerveModuleState targetState, boolean isCosineCompensated) {
         //PID experement
         //steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
         //driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
 
-        // FUNCTIONING
         double currentAngle = getModuleAngRotations();
         double steerMotorCommand = -steerController.calculate(currentAngle, targetState.angle.getRotations());
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
