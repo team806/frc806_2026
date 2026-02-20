@@ -71,24 +71,17 @@ public class SwerveModule extends SubsystemBase{
 
     }
 
-    //DRIVE//
     public void setTargetState(SwerveModuleState targetState, boolean isCosineCompensated) {
         //PID experement
         //steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
         //driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
 
-        // FUNCTIONING
         double currentAngle = getModuleAngRotations();
-        steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
+        steerMotor.set(steerController.calculate(currentAngle, targetState.angle.getRotations()));
         if (isCosineCompensated) {
             targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
         }
-        driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
-    }
-    
-    //FEEDBACK//
-    public void periodic() {
-        SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
+        driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS);
     }
 
     public double getModuleAngRotations(){
