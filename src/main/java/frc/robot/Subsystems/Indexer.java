@@ -27,6 +27,9 @@ public class Indexer extends SubsystemBase {
         return runOnce(() -> {
             bottomRoller.set(0.4);
             topRoller.set(0.4);
+        }).finallyDo(() -> {
+            bottomRoller.set(0);
+            topRoller.set(0);
         }).withName("Start Indexing");
     }
 

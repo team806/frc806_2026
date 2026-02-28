@@ -16,6 +16,7 @@ public class Shooter extends SubsystemBase {
         config.idleMode(IdleMode.kCoast).smartCurrentLimit(30);
 
         shooter.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
+        setDefaultCommand(prime());
     }
 
     // _If_ we need a third state where motor does not turn, turn off the motor
