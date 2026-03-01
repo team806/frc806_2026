@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -19,6 +20,8 @@ public class RobotContainer {
     CommandXboxController coDriveController = new CommandXboxController(1);
     CommandXboxController ohShitController = new CommandXboxController(2);
 
+    private final Trigger coDriveRightTrigger = coDriveController.rightTrigger(0.5);
+
     public final Drivetrain drivetrain = new Drivetrain(Constants.Modules.moduleArray, driveController);
     
     public final Indexer indexer = new Indexer(Constants.Indexer.BottomRollerID, Constants.Indexer.TopRollerID);
@@ -31,6 +34,6 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        
+        coDriveRightTrigger.whileTrue(parallel(indexer.index(), shooter.shoot()));
     }
 }
