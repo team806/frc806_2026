@@ -6,15 +6,13 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Intake extends SubsystemBase {
     private final SparkFlex roller;
 
-    private double rollerSpeed;
+    private double rollerSpeed = 0.5;
 
     @SuppressWarnings("removal")
     public Intake(int armId, int rollerId) {
@@ -25,11 +23,7 @@ public class Intake extends SubsystemBase {
 
         roller.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
 
-        rollerSpeed = Preferences.getDouble("rollerSpeed", 0);
-
         setDefaultCommand(deploy());
-        SmartDashboard.putData(this);
-        SmartDashboard.putData(saveSettings());
     }
 
     public Command deploy() {
@@ -46,14 +40,7 @@ public class Intake extends SubsystemBase {
 
     // We _might_ need to temporarily slow down intake during shooting but that is to be determined later
 
-    public Command saveSettings() {
-        return runOnce(() -> {
-            Preferences.setDouble("rollerSpeed", rollerSpeed);
-        });
-    }
-
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Roller speed", () -> rollerSpeed, (newSpeed) -> rollerSpeed = newSpeed);
     }
 }

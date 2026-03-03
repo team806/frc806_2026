@@ -56,8 +56,8 @@ public class Constants {
     }
 
     public interface Intake {
-        public static final int ArmID = 13;
-        public static final int RollerID = 15;
+        public static final int ArmID = 15;
+        public static final int RollerID = 13;
     }
 
     public interface Drivetrain {

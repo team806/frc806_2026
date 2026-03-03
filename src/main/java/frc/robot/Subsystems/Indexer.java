@@ -1,8 +1,6 @@
 package frc.robot.Subsystems;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.Preferences;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.spark.SparkFlex;
@@ -14,9 +12,9 @@ public class Indexer extends SubsystemBase {
     private final SparkFlex bottomRoller;
     private final SparkFlex topRoller;
 
-    private double floorIdleSpeed;
-    private double floorIndexSpeed;
-    private double ceilingIndexSpeed;
+    private final double floorIdleSpeed = 0.05;
+    private final double floorIndexSpeed = 0.3;
+    private final double ceilingIndexSpeed = 0.3;
 
     @SuppressWarnings("removal")
     public Indexer(int bottomRollerID, int topRollerID) {
@@ -30,13 +28,7 @@ public class Indexer extends SubsystemBase {
         bottomRoller.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
         topRoller.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
 
-        floorIdleSpeed = Preferences.getDouble("floorIdleSpeed", 0);
-        floorIndexSpeed = Preferences.getDouble("floorIndexSpeed", 0);
-        ceilingIndexSpeed = Preferences.getDouble("ceilingIndexSpeed", 0);
-
         setDefaultCommand(rollFloor());
-        SmartDashboard.putData(this);
-        SmartDashboard.putData(saveSettings());
     }
 
     public Command rollFloor() {
@@ -54,18 +46,7 @@ public class Indexer extends SubsystemBase {
         }).withName("Start indexing");
     }
 
-    public Command saveSettings() {
-        return runOnce(() -> {
-            Preferences.setDouble("floorIdleSpeed", floorIdleSpeed);
-            Preferences.setDouble("floorIndexSpeed", floorIndexSpeed);
-            Preferences.setDouble("ceilingIndexSpeed", ceilingIndexSpeed);
-        });
-    }
-
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Floor idle speed", () -> floorIdleSpeed, (newSpeed) -> floorIdleSpeed = newSpeed);
-        builder.addDoubleProperty("Floor index speed", () -> floorIndexSpeed, (newSpeed) -> floorIndexSpeed = newSpeed);
-        builder.addDoubleProperty("Ceiling index speed", () -> ceilingIndexSpeed, (newSpeed) -> ceilingIndexSpeed = newSpeed);
     }
 }
