@@ -20,7 +20,7 @@ public class Shooter extends SubsystemBase {
 
         SparkFlexConfig config = new SparkFlexConfig();
         config.idleMode(IdleMode.kBrake).smartCurrentLimit(30);
-
+        config.inverted(true);
         shooter.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
 
         setDefaultCommand(prime());
