@@ -44,6 +44,7 @@ public class Robot extends TimedRobot {
     public void autonomousExit() {}
 
     @Override
+    @SuppressWarnings("removal")
     public void teleopInit() {
         m_robotContainer.drivetrain.getInitialCommand().schedule();
     }

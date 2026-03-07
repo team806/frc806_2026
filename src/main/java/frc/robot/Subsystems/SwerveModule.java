@@ -5,6 +5,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -40,7 +41,7 @@ public class SwerveModule extends SubsystemBase{
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
     private final SlewRateLimiter steerLimiter = new SlewRateLimiter(Constants.Drivetrain.SteerMotorSlewRate);
 
-    public SwerveModule(int driveMotorID, int steerMotorID, int encoderID){
+    public SwerveModule(int driveMotorID, int steerMotorID, int encoderID, boolean invertDirection){
         this.driveMotorID = driveMotorID;
         this.encoderID = encoderID;
 
@@ -51,6 +52,9 @@ public class SwerveModule extends SubsystemBase{
         driveMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
         driveMotorConfig.Feedback.RotorToSensorRatio = DRIVE_POSITION_CONVERSION;
+        if (invertDirection) {
+            driveMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+        }
         driveMotor.getConfigurator().apply(driveMotorConfig);
 
         //steer motor
@@ -71,7 +75,7 @@ public class SwerveModule extends SubsystemBase{
         //driveController.setD(Constants.Modules.SpeedKD);
 
         steerController = new PIDController(Constants.Modules.SteerKP, Constants.Modules.SteerKI, Constants.Modules.SteerKD);
-        steerController.enableContinuousInput(0, 1);
+        steerController.enableContinuousInput(0 - Preferences.getDouble(EncoderPreferenceKey + encoderID, 0), 1 - Preferences.getDouble(EncoderPreferenceKey + encoderID, 0));
 
     }
 
@@ -89,15 +93,6 @@ public class SwerveModule extends SubsystemBase{
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
 
-    public Command prepareToCalibrate() {
-        return runOnce(() -> {
-            steerMotor.setNeutralMode(NeutralModeValue.Coast);
-            steerMotor.set(0);
-        }).finallyDo(() -> {
-            steerMotor.setNeutralMode(NeutralModeValue.Brake);
-        }).withName("Prepare to calibrate");
-    }
-    
     public Command calibrate() {
         return runOnce(() -> {
             var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
