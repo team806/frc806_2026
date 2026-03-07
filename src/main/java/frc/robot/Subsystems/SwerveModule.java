@@ -34,7 +34,7 @@ public class SwerveModule extends SubsystemBase{
     //conversion factors
     final double WHEEL_DIAMETER = Units.inchesToMeters(4);
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
-    final double GEAR_RATIO = 1.0 / 6.75;
+    final double GEAR_RATIO = 1.0 / 5.27;
     final double DRIVE_POSITION_CONVERSION = WHEEL_CIRCUMFERENCE * GEAR_RATIO;
     final double DRIVE_VELOCITY_CONVERSION = DRIVE_POSITION_CONVERSION / 60.0;
     final double STEER_POSITION_CONVERSION = 1;
@@ -51,10 +51,12 @@ public class SwerveModule extends SubsystemBase{
         driveMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         driveMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        driveMotorConfig.Feedback.SensorToMechanismRatio = DRIVE_POSITION_CONVERSION;
         if (invertDirection) {
             driveMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         }
         driveMotor.getConfigurator().apply(driveMotorConfig);
+        driveMotor.setPosition(0);
 
         //steer motor
         steerMotor = new TalonFX(steerMotorID);
@@ -78,7 +80,7 @@ public class SwerveModule extends SubsystemBase{
 
     }
 
-    public void setTargetState(SwerveModuleState targetState, boolean isCosineCompensated) {
+    public void setTargetState(SwerveModuleState targetState) {
         //PID experement
         //steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
         //driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
@@ -86,9 +88,8 @@ public class SwerveModule extends SubsystemBase{
         double currentAngle = getModuleAngRotations();
         double steerMotorCommand = steerController.calculate(currentAngle, targetState.angle.getRotations());
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
-        if (isCosineCompensated) {
-            targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
-        }
+        // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
+        targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
 
