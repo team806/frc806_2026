@@ -38,8 +38,8 @@ public class Camera extends SubsystemBase {
     
     private final PhotonCamera camera;
     private final int maxTrackedTargets;
-    private final Supplier<Rotation2d> rotationProvider;
-    private final Supplier<SwerveModulePosition[]> positionProvider;
+    private final Supplier<Rotation2d> rotationSupplier;
+    private final Supplier<SwerveModulePosition[]> positionSupplier;
     private final Map<Integer, AprilTag> aprilTags = new HashMap<>();
     private final SwerveDriveKinematics kinematics;
     private int closestFiducialId;
@@ -49,12 +49,12 @@ public class Camera extends SubsystemBase {
     private final Alert noTagAlert = new Alert("No April Tags detected", AlertType.kWarning);
     private final Alert tagCountAlert = new Alert("", AlertType.kInfo);
 
-    public Camera(String name, int maxTrackedTargets, Supplier<SwerveDriveKinematics> kinematicsSupplier, Supplier<Rotation2d> rotationProvider, Supplier<SwerveModulePosition[]> positionProvider) {
+    public Camera(String name, int maxTrackedTargets, Supplier<SwerveDriveKinematics> kinematicsSupplier, Supplier<Rotation2d> rotationSupplier, Supplier<SwerveModulePosition[]> positionProvider) {
         camera = new PhotonCamera(name);
         this.maxTrackedTargets = maxTrackedTargets;
         this.kinematics = kinematicsSupplier.get();
-        this.rotationProvider = rotationProvider;
-        this.positionProvider = positionProvider;
+        this.rotationSupplier = rotationSupplier;
+        this.positionSupplier = positionProvider;
     }
  
     @Override
@@ -101,8 +101,8 @@ public class Camera extends SubsystemBase {
                     aprilTag = new AprilTag();
                     aprilTag.poseEstimator = new SwerveDrivePoseEstimator(
                         kinematics,
-                        rotationProvider.get(),
-                        positionProvider.get(),
+                        rotationSupplier.get(),
+                        positionSupplier.get(),
                         cameraPose,
                         new Matrix<N3, N1>(Nat.N3(), Nat.N1(), new double[]{Constants.Drivetrain.Odometry.PositionStdDev, Constants.Drivetrain.Odometry.PositionStdDev, Constants.Drivetrain.Odometry.AngleStdDev}),
                         new Matrix<N3, N1>(Nat.N3(), Nat.N1(), new double[]{Constants.Drivetrain.Vision.XConstantStdDev, Constants.Drivetrain.Vision.YConstantStdDev, Constants.Drivetrain.Vision.AngleStdDev})
@@ -123,7 +123,7 @@ public class Camera extends SubsystemBase {
                 if (timestamp - entry.getValue().timestamp > TIMEOUT) {
                     it.remove();
                 }
-                entry.getValue().poseEstimator.update(rotationProvider.get(), positionProvider.get());
+                entry.getValue().poseEstimator.update(rotationSupplier.get(), positionSupplier.get());
             }
 
             if (aprilTags.size() == 0) {
@@ -144,7 +144,7 @@ public class Camera extends SubsystemBase {
     }
 
     public Pose2d getClosestPose() {
-        return aprilTags.get(closestFiducialId).poseEstimator.getEstimatedPosition();
+        return getPose(closestFiducialId);
     }
 
     public Pose2d getPose(int fiducialId) {

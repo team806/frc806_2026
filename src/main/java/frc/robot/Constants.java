@@ -26,9 +26,10 @@ public class Constants {
     public static double controllerDeadband = 0.15; 
 
     public interface Camera {
-        public static final String Name = "photonvision";
-        public static final int MaxTrackedTargets = 3;
+        public static final String Name = "front";
+        public static final int MaxTrackedTargets = 1;
         public static final double MaxTargetPoseAmbiguity = 0.2;
+        public static final Translation2d Position = new Translation2d(0, 0);
     }
 
     public interface Modules{
