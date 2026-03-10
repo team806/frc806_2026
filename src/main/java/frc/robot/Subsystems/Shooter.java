@@ -3,31 +3,30 @@ package frc.robot.Subsystems;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import frc.robot.Constants;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkBase.ControlType;
 
 
 public class Shooter extends SubsystemBase {
     private final SparkFlex shooter;
-    private final RelativeEncoder encoder;
+    private final SparkClosedLoopController closedLoopController;
 
     private double primeRPM = 0;
     private double shootRPM = 0;
-
-    final PIDController controller = new PIDController(Constants.Shooter.kP, Constants.Shooter.kI, Constants.Shooter.kD);
-    final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV);
     
     @SuppressWarnings("removal")
     public Shooter(int MotorID) {
         shooter = new SparkFlex(MotorID, MotorType.kBrushless);
-        encoder = shooter.getEncoder();
+        closedLoopController = shooter.getClosedLoopController();
         SparkFlexConfig config = new SparkFlexConfig();
+        config.closedLoop.pid(Constants.Shooter.kP, Constants.Shooter.kI, Constants.Shooter.kD);
+        config.closedLoop.velocityFF(Constants.Shooter.FF);
         config.idleMode(IdleMode.kCoast).smartCurrentLimit(30);
         config.inverted(true);
         shooter.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
@@ -40,11 +39,7 @@ public class Shooter extends SubsystemBase {
 
 
     public void setSpeed(double targetRPM) {
-        targetRPM = targetRPM / 60;
-        double currentRPM = encoder.getVelocity() / 60;
-        double pidOutput = controller.calculate(currentRPM, targetRPM);
-        double ffOutput = ff.calculate(targetRPM);
-        shooter.setVoltage(pidOutput + ffOutput);
+        closedLoopController.setSetpoint(targetRPM, ControlType.kVelocity);
     }
 
     public Command prime() {
