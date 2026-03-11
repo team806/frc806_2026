@@ -25,6 +25,13 @@ public class Constants {
 
     public static double controllerDeadband = 0.15; 
 
+    public interface Camera {
+        public static final String Name = "front";
+        public static final int MaxTrackedTargets = 1;
+        public static final double MaxTargetPoseAmbiguity = 0.2;
+        public static final Translation2d Position = new Translation2d(0, 0);
+    }
+
     public interface Modules{
         public static final double SpeedKP = 0.001, SpeedKI = 0, SpeedKD = 0.0005;
         public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
@@ -68,7 +75,30 @@ public class Constants {
     }
 
     public interface Drivetrain {
-        public static final double TranslationPow = 3;
+        public interface Odometry {
+            public static final double PositionStdDev = 0.1;
+            public static final double AngleStdDev = 0.1;
+        }
+
+        public interface Vision {
+            public static final double XConstantStdDev = 0.9;
+            public static final double XMagnitudeStdDev = 0.0;
+            public static final double YConstantStdDev = 0.9;
+            public static final double YMagnitudeStdDev = 0.0;
+            public static final double AngleStdDev = 0.1;
+
+            public static final double XRejectDistance = 1.0;
+            public static final double YRejectDistance = 1.0;
+
+            public static final double InitialTimeoutSeconds = 1.0;
+            public static final double TimeoutSeconds = 1.0;
+
+            public static final double TargetX = 0.0;
+            public static final double TargetY = -1.0;
+            public static final double TargetTheta = 0.0;
+        }
+
+		public static final double TranslationPow = 3;
         public static final double RotationPow = 3;
 
         public static final double SlowFactor = 3;
@@ -80,6 +110,7 @@ public class Constants {
     public interface Motion {
         public static final double translationKP = 0.02, translationKI = 0, translationKD = 0;
         public static final double rotationKP = 0.02, rotationKI = 0, rotationKD = 0;
+            public static final double xoffset = 0.5, yoffset = 0.25;
     }
 
 }
