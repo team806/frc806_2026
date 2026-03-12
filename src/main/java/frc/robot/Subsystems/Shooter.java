@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
@@ -28,7 +29,10 @@ public class Shooter extends SubsystemBase {
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV);
     
     private final Alert shooterGoodAlert = new Alert("Shooter at target speed!", AlertType.kInfo);
-    private final Alert shooterBadAlert = new Alert("Shooter not at target speed!", AlertType.kInfo);
+    private final Alert shooterBadAlert = new Alert("Shooter not at target speed!", AlertType.kWarning);
+
+    private String mode = "Idle";
+    private int counter = 0;
 
     @SuppressWarnings("removal")
     public Shooter(int MotorID) {
@@ -71,21 +75,11 @@ public class Shooter extends SubsystemBase {
         }
     }
 
-    public void shooter_debug(String mode) {
-        double currentRPS = encoder.getVelocity();
-        double target = mode.equals("Prime") ? primeRPS : shootRPS;
-        SmartDashboard.putString("Shooter status", mode);
-        SmartDashboard.putNumber("Shooter RPS", currentRPS);
-        SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
-        SmartDashboard.putNumber("Shooter error", target - currentRPS);
-        speed_alert(check_correct_speed(target, currentRPS));
-    }
-
     public Command prime() {
         // Default command, rotate slowly to reduce shooting prep time
         return runEnd(() -> {
+            mode = "Prime";
             setSpeed(primeRPS);
-            shooter_debug("Prime");
         }, () -> {}).withName("Prime");
     }
 
@@ -93,12 +87,30 @@ public class Shooter extends SubsystemBase {
         // Speed up rollers, control velocty
         // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/tuning-flywheel.html
         return runEnd(() -> {
+            mode = "Shoot";
             setSpeed(shootRPS);
-            shooter_debug("Shoot");
         }, () -> {}).withName("Shoot");
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
+    }
+
+    @Override
+    public void periodic() {
+        //Every 100ms
+        if (counter % 5 == 0) {
+            if (edu.wpi.first.wpilibj.RobotState.isDisabled()) {
+                mode = "Idle";
+            }
+            double currentRPS = encoder.getVelocity();
+            double target = mode.equals("") ? 0 : (mode.equals("Prime") ? primeRPS : shootRPS);
+            SmartDashboard.putString("Shooter status", mode);
+            SmartDashboard.putNumber("Shooter RPS", currentRPS);
+            SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
+            SmartDashboard.putNumber("Shooter error", target - currentRPS);
+            speed_alert(check_correct_speed(target, currentRPS));
+        }
+        counter++;
     }
 }
