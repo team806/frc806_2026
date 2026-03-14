@@ -18,7 +18,8 @@ import frc.robot.Constants;
 
 
 public class Shooter extends SubsystemBase {
-    private final SparkFlex shooterMotor;
+    private final SparkFlex shooter;
+    private final RelativeEncoder encoder;
 
     private double primeRPS = Constants.Shooter.PrimeRPM / 60.0;
     private double shootRPS = Constants.Shooter.ShootRPM / 60.0;
@@ -31,7 +32,8 @@ public class Shooter extends SubsystemBase {
 
     @SuppressWarnings("removal")
     public Shooter(int MotorID) {
-        shooterMotor = new SparkFlex(MotorID, MotorType.kBrushless);
+        shooter = new SparkFlex(MotorID, MotorType.kBrushless);
+        encoder = shooter.getEncoder();
         SparkFlexConfig config = new SparkFlexConfig();
         config.idleMode(IdleMode.kCoast).smartCurrentLimit(30);
         config.inverted(true);
