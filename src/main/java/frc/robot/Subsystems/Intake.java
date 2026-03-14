@@ -41,7 +41,7 @@ public class Intake extends SubsystemBase {
 
         armConfig.Feedback.FeedbackRemoteSensorID = Constants.Intake.ArmEncoderId;
         armConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
-        armConfig.Feedback.SensorToMechanismRatio = 1.0;
+        armConfig.Feedback.SensorToMechanismRatio = 1.0/25.0;
 
         armConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
         armConfig.CurrentLimits.SupplyCurrentLimit = 40;
