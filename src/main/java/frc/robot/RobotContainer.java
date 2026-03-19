@@ -21,6 +21,8 @@ public class RobotContainer {
     CommandXboxController ohShitController = new CommandXboxController(2);
 
     private final Trigger driveRightTrigger = driveController.rightTrigger(0.5);
+    private final Trigger drivekLeftBumper = driveController.leftBumper();
+    private final Trigger drivekRightBumper = driveController.rightBumper();
 
     public final Drivetrain drivetrain = new Drivetrain(Constants.Modules.moduleArray, driveController);
     
@@ -35,5 +37,7 @@ public class RobotContainer {
 
     private void configureBindings() {
         driveRightTrigger.whileTrue(parallel(indexer.index(), shooter.shoot()));
+        drivekRightBumper.toggleOnTrue(intake.top());
+        drivekLeftBumper.whileTrue(intake.bump());
     }
 }
