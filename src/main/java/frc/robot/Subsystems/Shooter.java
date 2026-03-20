@@ -82,20 +82,22 @@ public class Shooter extends SubsystemBase {
     }
 
     public Command prime() {
-        // Default command, rotate slowly to reduce shooting prep time
+        // // Default command, rotate slowly to reduce shooting prep time
         return runEnd(() -> {
             setSpeed(primeRPS);
             shooter_debug("Prime");
         }, () -> {}).withName("Prime");
+        // return run(() -> {});
     }
 
     public Command shoot() {
-        // Speed up rollers, control velocty
-        // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/tuning-flywheel.html
+        // // Speed up rollers, control velocty
+        // // https://docs.wpilib.org/en/stable/docs/software/advanced-controls/introduction/tuning-flywheel.html
         return runEnd(() -> {
             setSpeed(shootRPS);
             shooter_debug("Shoot");
         }, () -> {}).withName("Shoot");
+        // return run(() -> {});
     }
 
     @Override
