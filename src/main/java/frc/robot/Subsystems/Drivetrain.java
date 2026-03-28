@@ -71,8 +71,7 @@ public class Drivetrain extends SubsystemBase {
     private final PIDController visionSidewaysController = new PIDController(0.1, 0, 0);
     private final PIDController visionRotationsController = new PIDController(0.1, 0, 0);
 
-    private Supplier<Integer> closestFiducialIdSupplier;
-    private Function<Integer, Pose2d> pose2dSupplier;
+    private Supplier<Pose2d> pose2dSupplier;
 
 
     // private final Alert calibratingAlert = new Alert("Calibrating steering motors", AlertType.kInfo);
@@ -96,11 +95,7 @@ public class Drivetrain extends SubsystemBase {
         
     }
 
-    public void setClosestFiducialIdSupplier(Supplier<Integer> closestFiducialIdSupplier) {
-        this.closestFiducialIdSupplier = closestFiducialIdSupplier;
-    }
-
-    public void setPose2dSupplier(Function<Integer, Pose2d> pose2dSupplier) {
+    public void setPose2dSupplier(Supplier<Pose2d> pose2dSupplier) {
         this.pose2dSupplier = pose2dSupplier;
     }
 
@@ -232,22 +227,22 @@ public class Drivetrain extends SubsystemBase {
     // }
 
     public Command aim(double targetX, double targetY, double targetTheta) {
-        return runOnce(() -> {
-            fiducialIdTarget = closestFiducialIdSupplier.get();
-        }).andThen(run(() -> {
-            var poseEstimate = pose2dSupplier.apply(fiducialIdTarget);
-            var forwardVelocity = MathUtil.clamp(visionForwardBackController.calculate(poseEstimate.getX(), targetX), -0.1, 0.1);
-            var sidewaysVelocity = MathUtil.clamp(visionSidewaysController.calculate(poseEstimate.getY(), targetY), -0.1, 0.1);
-            var angularVelcoity = MathUtil.clamp(visionRotationsController.calculate(poseEstimate.getRotation().getRadians(), targetTheta), -0.1, 0.1);
-            var speeds = new ChassisSpeeds(forwardVelocity, sidewaysVelocity, angularVelcoity);
+        // return runOnce(() -> {
+        //     fiducialIdTarget = closestFiducialIdSupplier.get();
+        // }).andThen(run(() -> {
+        //     var poseEstimate = pose2dSupplier.apply(fiducialIdTarget);
+        //     var forwardVelocity = MathUtil.clamp(visionForwardBackController.calculate(poseEstimate.getX(), targetX), -0.1, 0.1);
+        //     var sidewaysVelocity = MathUtil.clamp(visionSidewaysController.calculate(poseEstimate.getY(), targetY), -0.1, 0.1);
+        //     var angularVelcoity = MathUtil.clamp(visionRotationsController.calculate(poseEstimate.getRotation().getRadians(), targetTheta), -0.1, 0.1);
+        //     var speeds = new ChassisSpeeds(forwardVelocity, sidewaysVelocity, angularVelcoity);
 
-            // TODO: alert if targeting is running on odometry only
-            drive(speeds, Constants.Camera.Position);
-        })).until(() -> {
-            return visionForwardBackController.atSetpoint() &&
-                visionSidewaysController.atSetpoint() &&
-                visionRotationsController.atSetpoint();
-        }).onlyIf(() -> closestFiducialIdSupplier.get() != -1).withName("Aim");
+        //     // TODO: alert if targeting is running on odometry only
+        //     drive(speeds, Constants.Camera.Position);
+        // })).until(() -> {
+        //     return visionForwardBackController.atSetpoint() &&
+        //         visionSidewaysController.atSetpoint() &&
+        //         visionRotationsController.atSetpoint();
+        return Commands.none();
         
     }
 

@@ -1,6 +1,15 @@
 package frc.robot;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import frc.robot.Subsystems.SwerveModule;
 
 public class Constants {
@@ -30,6 +39,17 @@ public class Constants {
         public static final int MaxTrackedTargets = 1;
         public static final double MaxTargetPoseAmbiguity = 0.2;
         public static final Translation2d Position = new Translation2d(0, 0);
+
+        // TODO: fix these fake values
+        public static final Matrix<N3, N1> SingleTagStdDevs = VecBuilder.fill(4, 4, 8);
+        public static final Matrix<N3, N1> MultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
+
+        public static final Transform3d RobotToCamera = new Transform3d(
+            new Translation3d(0, 0, 0),
+            new Rotation3d(0, 0, 0)
+        );
+        public static final AprilTagFieldLayout FieldLayout =
+                AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     }
 
     public interface Modules{
@@ -74,21 +94,22 @@ public class Constants {
         }
 
         public interface Vision {
-            public static final double XConstantStdDev = 0.9;
-            public static final double XMagnitudeStdDev = 0.0;
-            public static final double YConstantStdDev = 0.9;
-            public static final double YMagnitudeStdDev = 0.0;
-            public static final double AngleStdDev = 0.1;
+            public static final double PositionStdDev = 1;
+            // public static final double XConstantStdDev = 0.9;
+            // public static final double XMagnitudeStdDev = 0.0;
+            // public static final double YConstantStdDev = 0.9;
+            // public static final double YMagnitudeStdDev = 0.0;
+            // public static final double AngleStdDev = 0.1;
 
-            public static final double XRejectDistance = 1.0;
-            public static final double YRejectDistance = 1.0;
+            // public static final double XRejectDistance = 1.0;
+            // public static final double YRejectDistance = 1.0;
 
-            public static final double InitialTimeoutSeconds = 1.0;
-            public static final double TimeoutSeconds = 1.0;
+            // public static final double InitialTimeoutSeconds = 1.0;
+            // public static final double TimeoutSeconds = 1.0;
 
-            public static final double TargetX = 0.0;
-            public static final double TargetY = -1.0;
-            public static final double TargetTheta = 0.0;
+            // public static final double TargetX = 0.0;
+            // public static final double TargetY = -1.0;
+            // public static final double TargetTheta = 0.0;
         }
 
 		public static final double TranslationPow = 3;

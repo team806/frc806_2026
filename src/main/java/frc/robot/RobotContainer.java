@@ -31,7 +31,6 @@ public class RobotContainer {
     public final Intake intake = new Intake(Constants.Intake.ArmID, Constants.Intake.RollerID);
 
     public RobotContainer() {
-        drivetrain.setClosestFiducialIdSupplier(camera::getClosestFiducialId);
         drivetrain.setPose2dSupplier(camera::getPose);
 
         configureBindings();
