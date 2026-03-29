@@ -21,20 +21,20 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants;
-import frc.robot.Commands.DriveFieldRelative;
 
 public class Drivetrain extends SubsystemBase {
-    boolean isWaitingToCalibrate;
-    Pigeon2 IMU;
+    private CommandXboxController controller;
+    private boolean isWaitingToCalibrate;
+    private Pigeon2 imu;
     public SwerveModule[] modules;
-    SwerveDriveKinematics kinematics;
-    SwerveDriveOdometry odometry;
-    ChassisSpeeds m_chassisSpeeds;
-    double translationMaxAccelerationMetersPerSecondSquared = 25;
-    double rotationMaxAccelerationRadiansPerSecondSquared = 50;
-    SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
-    SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
-    SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
+    private SwerveDriveKinematics kinematics;
+    private SwerveDriveOdometry odometry;
+    private ChassisSpeeds m_chassisSpeeds;
+    private double translationMaxAccelerationMetersPerSecondSquared = 25;
+    private double rotationMaxAccelerationRadiansPerSecondSquared = 50;
+    private SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
+    private SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
+    private SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
     private final StructArrayPublisher<SwerveModuleState> statePublisher;
     private Pose pose;
 
@@ -42,12 +42,14 @@ public class Drivetrain extends SubsystemBase {
     private final Alert calibratingAlert = new Alert("Drivetrain can be calibrated. Align wheels when disabled and calibrate or cancel", AlertType.kInfo);
     
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller) {
-        IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
+        imu = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
         kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
         odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), getModulePositions());
         statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
-        setDefaultCommand(new DriveFieldRelative(this, controller));
+        setDefaultCommand(manualDriveFieldRelative());
+        // TODO: We should inject axes rather than an entire controller
+        this.controller = controller;
 
         SmartDashboard.putData(enableCalibration());
         SmartDashboard.putData(calibrate());
@@ -64,11 +66,11 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Rotation2d getGyroscopeRotation() {
-        return Rotation2d.fromDegrees(IMU.getYaw().getValueAsDouble());
+        return Rotation2d.fromDegrees(imu.getYaw().getValueAsDouble());
     }
 
     public void resetGyro() {
-        IMU.reset();
+        imu.reset();
     }
 
     public Command getInitialCommand() {
@@ -106,15 +108,64 @@ public class Drivetrain extends SubsystemBase {
         return runOnce(() -> isWaitingToCalibrate = false).withName("Canceling calibration");
     }
 
-    public void drive(ChassisSpeeds chassisSpeeds) {
+    public Command manualDrive() {
+        return run(() -> setSpeeds(getManualChassisSpeeds())).withName("Drive");
+    }
+
+    public Command manualDriveFieldRelative() {
+        return run(() -> setFieldRelativeSpeeds(getManualChassisSpeeds())).withName("Drive Field Relative");
+    }
+
+    public Command driveToNearestAprilTag(double x, double y, double theta) {
+        return none().withName("Drive to Nearest April Tag");
+    }
+
+    public Command manualDriveFieldRelativeWithSteerAimToNearestAprilTag() {
+        return none().withName("Drive Field Relative with Steer Aim to Nearest April Tag");
+    }
+
+    @Override
+    public void periodic() {
+        // TODO: calibration triggers don't need to be commands
+        if (controller.start().getAsBoolean()){
+            resetGyro();
+        }
+    }
+
+    private ChassisSpeeds getManualChassisSpeeds() {
+        double x = controller.getLeftX(), y = controller.getLeftY(), theta = controller.getRightX();
+        
+        if (Math.hypot(x, y) < Constants.Drivetrain.ControllerDeadband) {
+            x = 0;
+            y = 0;
+        }
+
+        if (Math.abs(theta) < Constants.Drivetrain.ControllerDeadband) {
+            theta = 0.0;
+        }
+
+        x = (x > 0) ? Math.abs(Math.pow(x, Constants.Drivetrain.TranslationPow)) : -Math.abs(Math.pow(x, Constants.Drivetrain.TranslationPow));
+        y = (y > 0) ? Math.abs(Math.pow(y, Constants.Drivetrain.TranslationPow)) : -Math.abs(Math.pow(y, Constants.Drivetrain.TranslationPow));
+        theta = (theta > 0) ? Math.abs(Math.pow(theta, Constants.Drivetrain.RotationPow)) : -Math.abs(Math.pow(theta, Constants.Drivetrain.RotationPow));
+
+        double slowModeFactor = (controller.getLeftTriggerAxis() * Constants.Drivetrain.SlowFactor) + Constants.Drivetrain.SlowFactorOffset;
+
+        return new ChassisSpeeds(
+            (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+            (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+            -(theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor
+        );
+    }
+
+    public void setSpeeds(ChassisSpeeds chassisSpeeds) {
         setModuleTargetStates(chassisSpeeds, new Translation2d());
     }
 
-    public void drive(ChassisSpeeds chassisSpeeds, Translation2d centerOfRotation) {
+	public void setSpeeds(ChassisSpeeds chassisSpeeds, Translation2d centerOfRotation) {
         setModuleTargetStates(chassisSpeeds, centerOfRotation);
     }
 
-    public void driveFieldRelative(ChassisSpeeds chassisSpeeds) {
+    public void setFieldRelativeSpeeds(ChassisSpeeds chassisSpeeds) {
         chassisSpeeds.vxMetersPerSecond = translationXLimiter.calculate(chassisSpeeds.vxMetersPerSecond);
         chassisSpeeds.vyMetersPerSecond = translationYLimiter.calculate(chassisSpeeds.vyMetersPerSecond);
         chassisSpeeds.omegaRadiansPerSecond = rotationLimiter.calculate(chassisSpeeds.omegaRadiansPerSecond);

@@ -88,7 +88,6 @@ public class SwerveModule extends SubsystemBase{
         double currentAngle = getModuleAngRotations();
         double steerMotorCommand = steerController.calculate(currentAngle, targetState.angle.getRotations());
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
-        // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
         targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
