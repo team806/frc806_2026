@@ -40,7 +40,7 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        driveRightTrigger.whileTrue(parallel(indexer.index(), shooter.shoot()));
+        driveRightTrigger.whileTrue(indexer.index());
         drivekRightBumper.toggleOnTrue(intake.top());
         drivekLeftBumper.whileTrue(intake.bump());
     }
