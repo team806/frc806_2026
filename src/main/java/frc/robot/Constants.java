@@ -92,7 +92,6 @@ public class Constants {
 
     public interface Shooter {
         public static final int MotorID = 17;
-        public static final double PrimeRPM = 3000;
         public static final double ShootRPM = 3500;
         public static final double kP = 0.5;
         public static final double kI = 0;
