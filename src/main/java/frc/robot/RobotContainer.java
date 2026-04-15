@@ -52,11 +52,26 @@ public class RobotContainer {
     }
 
     private void configureNamedCommands() {
-        NamedCommands.registerCommand("index", indexer.runOnce(() -> indexer.index()));
+        NamedCommands.registerCommand("Index", indexer.index());
+        NamedCommands.registerCommand("Stop Indexer", indexer.stop());
+        NamedCommands.registerCommand("Shoot", shooter.shoot());
+        NamedCommands.registerCommand("Stop Shooter", shooter.stop());
+        NamedCommands.registerCommand("Intake", intake.intake());
+        NamedCommands.registerCommand("Discharge", intake.discharge());
+        NamedCommands.registerCommand("Stop Intake", indexer.stop());
+        NamedCommands.registerCommand("Deploy arm", arm.deploy());
+        NamedCommands.registerCommand("Bump arm", arm.bump());
+        NamedCommands.registerCommand("Top arm", arm.top());
     }
 
     public Command getAutonomousCommand() {
-        String autoName = "Middle";
+        String auto1 = "Back_shoot";
+        String auto2 = "Back_shoot_reload_shoot";
+        String auto3 = "Back_shoot_leftmid_shoot";
+        String auto4 = "Back_shoot_rightmid_shoot";
+    
+        String autoName = auto1;
+
         try {
             return new PathPlannerAuto(autoName);
         } catch (Exception e) {

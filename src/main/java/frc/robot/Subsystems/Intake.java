@@ -40,6 +40,13 @@ public class Intake extends SubsystemBase {
         // return run(() -> {});
     }
 
+    public Command stop() {
+        return runEnd(() -> {
+            roller.setVoltage(0);
+        }, () -> {}).withName("Stop intake");
+        // return run(() -> {});
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
     }

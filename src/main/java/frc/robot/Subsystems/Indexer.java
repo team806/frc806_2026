@@ -40,6 +40,13 @@ public class Indexer extends SubsystemBase {
         // return run(() -> {});
     }
 
+    public Command stop() {
+        return runEnd(() -> {
+            topRoller.setVoltage(0);
+        }, () -> {}).withName("Stop indexer");
+        // return run(() -> {});
+    }
+
     @Override
     public void initSendable(SendableBuilder builder) {
     }

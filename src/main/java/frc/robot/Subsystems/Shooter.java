@@ -86,6 +86,13 @@ public class Shooter extends SubsystemBase {
         // return run(() -> {});
     }
 
+    public Command stop() {
+        return runEnd(() -> {
+            shooter.setVoltage(0);
+        }, () -> {}).withName("Stop shooter");
+        // return run(() -> {});
+    }
+
     @Override
     public void periodic() {
         shooter_debug();
