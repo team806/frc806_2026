@@ -15,6 +15,8 @@ import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.Intake;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.auto.NamedCommands;
 import frc.robot.Subsystems.Arm;
 
 public class RobotContainer {
@@ -38,6 +40,8 @@ public class RobotContainer {
         drivetrain.setPose(pose);
 
         configureBindings();
+        configureNamedCommands();
+
         SmartDashboard.putData(CommandScheduler.getInstance());
     }
 
@@ -45,5 +49,19 @@ public class RobotContainer {
         driveRightTrigger.whileTrue(indexer.index());
         drivekRightBumper.toggleOnTrue(arm.top());
         drivekLeftBumper.whileTrue(arm.bump());
+    }
+
+    private void configureNamedCommands() {
+        NamedCommands.registerCommand("index", indexer.runOnce(() -> indexer.index()));
+    }
+
+    public Command getAutonomousCommand() {
+        String autoName = "Middle";
+        try {
+            return new PathPlannerAuto(autoName);
+        } catch (Exception e) {
+            System.err.println("ERROR: Failed to load auto " + autoName + ": " + e.getMessage());
+            return edu.wpi.first.wpilibj2.command.Commands.none();
+        }
     }
 }
