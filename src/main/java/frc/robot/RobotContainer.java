@@ -17,6 +17,7 @@ import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.Intake;
 import com.pathplanner.lib.commands.PathPlannerAuto;
 import com.pathplanner.lib.auto.NamedCommands;
+import frc.robot.Subsystems.Arm;
 
 public class RobotContainer {
     public CommandXboxController driveController = new CommandXboxController(0);
@@ -30,9 +31,10 @@ public class RobotContainer {
     public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController);
     public final Pose pose = new Pose(Constants.Pose.CameraName, drivetrain::getKinematics, drivetrain::getGyroscopeRotation, drivetrain::getModulePositions);
     
-    public final Indexer indexer = new Indexer(Constants.Indexer.BottomRollerID, Constants.Indexer.TopRollerID);
+    public final Indexer indexer = new Indexer(Constants.Indexer.TopRollerID);
     public final Shooter shooter = new Shooter(Constants.Shooter.MotorID);
-    public final Intake intake = new Intake(Constants.Intake.ArmID, Constants.Intake.RollerID);
+    public final Intake intake = new Intake(Constants.Intake.RollerID);
+    public final Arm arm = new Arm(Constants.Arm.ArmLeaderID, Constants.Arm.ArmFollowerID);
 
     public RobotContainer() {
         drivetrain.setPose(pose);
@@ -44,9 +46,9 @@ public class RobotContainer {
     }
 
     private void configureBindings() {
-        driveRightTrigger.whileTrue(parallel(indexer.index(), shooter.shoot()));
-        drivekRightBumper.toggleOnTrue(intake.top());
-        drivekLeftBumper.whileTrue(intake.bump());
+        driveRightTrigger.whileTrue(indexer.index());
+        drivekRightBumper.toggleOnTrue(arm.top());
+        drivekLeftBumper.whileTrue(arm.bump());
     }
 
     private void configureNamedCommands() {
