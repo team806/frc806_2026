@@ -65,12 +65,13 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
+        String blankAuto = "";
         String auto1 = "Back_shoot";
         String auto2 = "Back_shoot_reload_shoot";
         String auto3 = "Back_shoot_leftmid_shoot";
         String auto4 = "Back_shoot_rightmid_shoot";
     
-        String autoName = auto1;
+        String autoName = blankAuto;
 
         try {
             return new PathPlannerAuto(autoName);

@@ -55,6 +55,8 @@ public class Arm extends SubsystemBase {
         armConfig.ClosedLoopGeneral.ContinuousWrap = false;
         armConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
+        armConfig.Feedback.RotorToSensorRatio = Constants.Arm.GearRatio;
+
         arm_leader.getConfigurator().apply(armConfig);
 
         arm_follower.setControl(new Follower(ArmLeaderId, MotorAlignmentValue.Opposed));

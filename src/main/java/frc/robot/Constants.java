@@ -109,14 +109,15 @@ public class Constants {
         public static final double kV = 0;
         public static final double kA = 0;
         public static final double kP = 40;
-        public static final double kI = 10;
+        public static final double kI = 5;
         public static final double kD = 0;
         public static final double MotionMagicCruiseVelocity = 75;
         public static final double MotionMagicAcceleration = 2;
-        public static final double ArmBottomPos = 0.08;
+        public static final double ArmBottomPos = 0;
         public static final double ArmHorizontalPos = 0;
-        public static final double ArmVerticalPos = -0.25;
-        public static final double ArmBackPos = -0.28;
+        public static final double ArmVerticalPos = 0.12;
+        public static final double ArmBackPos = 0.345;
+        public static final double GearRatio = 23.0;
     }
 
     public interface Intake {
