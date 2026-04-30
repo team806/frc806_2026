@@ -47,9 +47,7 @@ public class Robot extends TimedRobot {
 
     @Override
     @SuppressWarnings("removal")
-    public void teleopInit() {
-        m_robotContainer.drivetrain.getInitialCommand().schedule();
-    }
+    public void teleopInit() {}
 
     @Override
     public void teleopPeriodic() {}
