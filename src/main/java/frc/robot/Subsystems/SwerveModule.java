@@ -33,7 +33,9 @@ public class SwerveModule extends SubsystemBase{
     CANcoder moduleEncoder;
     private static final String EncoderPreferenceKey = "EncoderOffset";
     //conversion factors
-    final String SwerveName = "Swerve " + encoderID + " status";
+    final String SwerveStatusName = "Swerve " + encoderID + " status";
+    final String SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
+    final String SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
     final double WHEEL_DIAMETER = Units.inchesToMeters(4);
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     final double GEAR_RATIO = 1.0 / 5.27;
@@ -94,6 +96,8 @@ public class SwerveModule extends SubsystemBase{
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
         // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
         targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
+        SmartDashboard.putNumber(SwerveSpeedMPSName, targetState.speedMetersPerSecond);
+        SmartDashboard.putNumber(SwerveSpeedDutyCycleName, targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS);
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
 
@@ -111,10 +115,10 @@ public class SwerveModule extends SubsystemBase{
     @Override
     public void periodic() {
         if (swerveOperational()) {
-            SmartDashboard.putString(SwerveName, "No issues");
+            SmartDashboard.putString(SwerveStatusName, "No problems with swerve");
         }
         else {
-            SmartDashboard.putString(SwerveName, "Issue with swerve " + encoderID);
+            SmartDashboard.putString(SwerveStatusName, "Problem with swerve");
         }
     }
 
