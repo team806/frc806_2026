@@ -43,9 +43,6 @@ public class Drivetrain extends SubsystemBase {
     SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
     private final StructArrayPublisher<SwerveModuleState> statePublisher;
     private Pose pose;
-
-    private final Alert willCalibrateAlert = new Alert("Robot will enter drivetrain calibration when re-enabled", AlertType.kInfo);
-    private final Alert calibratingAlert = new Alert("Drivetrain can be calibrated. Align wheels when disabled and calibrate or cancel", AlertType.kInfo);
     
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller) {
         IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
