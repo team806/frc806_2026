@@ -33,9 +33,6 @@ public class SwerveModule extends SubsystemBase{
     CANcoder moduleEncoder;
     private static final String EncoderPreferenceKey = "EncoderOffset";
     //conversion factors
-    final String SwerveStatusName = "Swerve " + encoderID + " status";
-    final String SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
-    final String SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
     final double WHEEL_DIAMETER = Units.inchesToMeters(4);
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     final double GEAR_RATIO = 1.0 / 5.27;
@@ -45,9 +42,17 @@ public class SwerveModule extends SubsystemBase{
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
     private final SlewRateLimiter steerLimiter = new SlewRateLimiter(Constants.Drivetrain.SteerMotorSlewRate);
 
+    final String SwerveStatusName;
+    final String SwerveSpeedMPSName;
+    final String SwerveSpeedDutyCycleName;
+
     public SwerveModule(int driveMotorID, int steerMotorID, int encoderID){
         this.driveMotorID = driveMotorID;
         this.encoderID = encoderID;
+
+        SwerveStatusName = "Swerve " + encoderID + " status";
+        SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
+        SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
 
         //drive motor 
         driveMotor = new TalonFX(driveMotorID);
@@ -105,12 +110,15 @@ public class SwerveModule extends SubsystemBase{
 
     public Command calibrate() {
         return runOnce(() -> {
-            var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
+            var adjustedEncoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
             var steerEncoderConfig = new CANcoderConfiguration();
-            steerEncoderConfig.MagnetSensor.MagnetOffset = -encoderValue;
+            moduleEncoder.getConfigurator().refresh(steerEncoderConfig);
+            double offset = steerEncoderConfig.MagnetSensor.MagnetOffset;
+            var rawEncoderValue = adjustedEncoderValue - offset;
+            steerEncoderConfig.MagnetSensor.MagnetOffset = -rawEncoderValue;
             moduleEncoder.getConfigurator().apply(steerEncoderConfig);
-            Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
-            System.out.println("Calibrated succesfully");
+            Preferences.setDouble(EncoderPreferenceKey + encoderID, rawEncoderValue);
+            System.out.println("Succesfully calibrated swerve " + encoderID);
         }).ignoringDisable(true).withName("Calibrate");
     }
 
