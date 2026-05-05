@@ -51,7 +51,9 @@ public class SwerveModule extends SubsystemBase{
         var driveMotorConfig = new TalonFXConfiguration();
         driveMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        driveMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        driveMotorConfig.CurrentLimits.SupplyCurrentLimit = Constants.Drivetrain.DriveMotorsHighSupplyCurrentLimit;
+        driveMotorConfig.CurrentLimits.SupplyCurrentLowerLimit = Constants.Drivetrain.DriveMotorsLowSupplyCurrentLimit;
+        driveMotorConfig.CurrentLimits.SupplyCurrentLowerTime = Constants.Drivetrain.DriveMotorsHighSupplyCurrentSeconds;
         driveMotorConfig.Feedback.SensorToMechanismRatio = 1/DRIVE_POSITION_CONVERSION;
         driveMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
         driveMotor.getConfigurator().apply(driveMotorConfig);
@@ -62,7 +64,7 @@ public class SwerveModule extends SubsystemBase{
         var steerMotorConfig = new TalonFXConfiguration();
         steerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         steerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        steerMotorConfig.CurrentLimits.SupplyCurrentLimit = 20;
+        steerMotorConfig.CurrentLimits.SupplyCurrentLimit = Constants.Drivetrain.SteerMotorsSupplyCurrentLimit;
         steerMotor.getConfigurator().apply(steerMotorConfig);
         
         // module encoder
