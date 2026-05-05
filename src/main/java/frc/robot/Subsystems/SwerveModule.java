@@ -33,6 +33,9 @@ public class SwerveModule extends SubsystemBase{
     CANcoder moduleEncoder;
     private static final String EncoderPreferenceKey = "EncoderOffset";
     //conversion factors
+    final String SwerveStatusName = "Swerve " + encoderID + " status";
+    final String SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
+    final String SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
     final double WHEEL_DIAMETER = Units.inchesToMeters(4);
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
     final double GEAR_RATIO = 1.0 / 5.27;
@@ -82,7 +85,6 @@ public class SwerveModule extends SubsystemBase{
 
         steerController = new PIDController(Constants.Drivetrain.SteerDriveKP, Constants.Drivetrain.SteerDriveKI, Constants.Drivetrain.SteerDriveKD);
         steerController.enableContinuousInput(-0.5, 0.5);
-
     }
 
     public void setTargetState(SwerveModuleState targetState) {
@@ -96,6 +98,8 @@ public class SwerveModule extends SubsystemBase{
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
         // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
         targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
+        SmartDashboard.putNumber(SwerveSpeedMPSName, targetState.speedMetersPerSecond);
+        SmartDashboard.putNumber(SwerveSpeedDutyCycleName, targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS);
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
 
@@ -106,12 +110,31 @@ public class SwerveModule extends SubsystemBase{
             steerEncoderConfig.MagnetSensor.MagnetOffset = -encoderValue;
             moduleEncoder.getConfigurator().apply(steerEncoderConfig);
             Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
-        }).withName("Calibrate");
+            System.out.println("Calibrated succesfully");
+        }).ignoringDisable(true).withName("Calibrate");
     }
 
+    @Override
     public void periodic() {
-        // SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
+        if (swerveOperational()) {
+            SmartDashboard.putString(SwerveStatusName, "No problems with swerve");
+        }
+        else {
+            SmartDashboard.putString(SwerveStatusName, "Problem with swerve");
+        }
     }
+
+    public boolean swerveOperational() {
+        if (driveMotor.isConnected() && steerMotor.isConnected() && moduleEncoder.isConnected()) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean[] deviceStatus() {
+        return new boolean[]{driveMotor.isConnected(), steerMotor.isConnected(), moduleEncoder.isConnected()};
+    }
+    
 
     public double getModuleAngRotations() {
         return moduleEncoder.getAbsolutePosition().getValueAsDouble();
