@@ -50,6 +50,7 @@ public class SwerveModule extends SubsystemBase{
     final Alert SwerveOverall;
     final String SwerveSpeedMPSName;
     final String SwerveSpeedDutyCycleName;
+    final String SwerveRotationName;
 
     public SwerveModule(int driveMotorID, int steerMotorID, int encoderID){
         this.driveMotorID = driveMotorID;
@@ -61,6 +62,7 @@ public class SwerveModule extends SubsystemBase{
         SwerveOverall = new Alert("Swerve " + encoderID + " good to drive", AlertType.kInfo);
         SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
         SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
+        SwerveRotationName = "Swerve " + encoderID + " rotation";
 
         //drive motor 
         driveMotor = new TalonFX(driveMotorID);
@@ -138,6 +140,7 @@ public class SwerveModule extends SubsystemBase{
     @Override
     public void periodic() {
         setAlerts();
+        SmartDashboard.putNumber(SwerveRotationName, moduleEncoder.getAbsolutePosition().getValueAsDouble());
     }
 
     public void setAlerts() {
