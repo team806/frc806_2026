@@ -141,37 +141,18 @@ public class SwerveModule extends SubsystemBase{
     }
 
     public void setAlerts() {
-        if (!deviceStatus()[0]) {
-            SwerveDriveMotorAlert.set(true);
-        }
-        else {
-            SwerveDriveMotorAlert.set(false);
-        }
-        if (!deviceStatus()[1]) {
-            SwerveSteerMotorAlert.set(true);
-        }
-        else {
-            SwerveSteerMotorAlert.set(false);
-        }
-        if (!deviceStatus()[2]) {
-            SwerveEncoderAlert.set(true);
-        }
-        else {
-            SwerveEncoderAlert.set(false);
-        }
-        if (swerveOperational()) {
-            SwerveOverall.set(true);
-        }
-        else {
-            SwerveOverall.set(false);
-        }
+        var deviceStatus = getDeviceStatus();
+        SwerveDriveMotorAlert.set(!deviceStatus[0]);
+        SwerveSteerMotorAlert.set(!deviceStatus[1]);
+        SwerveEncoderAlert.set(!deviceStatus[2]);
+        SwerveOverall.set(getSwerveOperational());
     }
 
-    public boolean swerveOperational() {
+    public boolean getSwerveOperational() {
         return driveMotor.isConnected() && steerMotor.isConnected() && moduleEncoder.isConnected();
     }
 
-    public boolean[] deviceStatus() {
+    public boolean[] getDeviceStatus() {
         return new boolean[]{driveMotor.isConnected(), steerMotor.isConnected(), moduleEncoder.isConnected()};
     }
     
