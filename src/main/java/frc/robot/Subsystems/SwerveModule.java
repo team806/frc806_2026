@@ -47,7 +47,8 @@ public class SwerveModule extends SubsystemBase{
     final Alert SwerveDriveMotorAlert;
     final Alert SwerveSteerMotorAlert;
     final Alert SwerveEncoderAlert;
-    final Alert SwerveOverall;
+    final Alert SwerveGoodOverall;
+    final Alert SwerveBadOverall;
     final String SwerveSpeedMPSName;
     final String SwerveSpeedDutyCycleName;
     final String SwerveRotationName;
@@ -58,8 +59,9 @@ public class SwerveModule extends SubsystemBase{
 
         SwerveDriveMotorAlert = new Alert("Lost module " + encoderID + " drive motor(" + driveMotorID + ")", AlertType.kError);
         SwerveSteerMotorAlert = new Alert("Lost module " + encoderID + " steer motor(" + steerMotorID + ")", AlertType.kError);
-        SwerveEncoderAlert = new Alert("Lost module" + encoderID + " encoder(" + encoderID + ")", AlertType.kError);
-        SwerveOverall = new Alert("Swerve " + encoderID + " good to drive", AlertType.kInfo);
+        SwerveEncoderAlert = new Alert("Lost module " + encoderID + " encoder(" + encoderID + ")", AlertType.kError);
+        SwerveGoodOverall = new Alert("Swerve " + encoderID + " good to drive", AlertType.kInfo);
+        SwerveBadOverall = new Alert("Swerve " + encoderID + " not good to drive", AlertType.kError);
         SwerveSpeedMPSName = "Swerve " + encoderID + " speed MPS";
         SwerveSpeedDutyCycleName = "Swerve " + encoderID + " speed duty cycle";
         SwerveRotationName = "Swerve " + encoderID + " rotation";
@@ -148,7 +150,8 @@ public class SwerveModule extends SubsystemBase{
         SwerveDriveMotorAlert.set(!deviceStatus[0]);
         SwerveSteerMotorAlert.set(!deviceStatus[1]);
         SwerveEncoderAlert.set(!deviceStatus[2]);
-        SwerveOverall.set(getSwerveOperational());
+        SwerveGoodOverall.set(getSwerveOperational());
+        SwerveBadOverall.set(!getSwerveOperational());
     }
 
     public boolean getSwerveOperational() {
