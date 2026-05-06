@@ -49,8 +49,40 @@ public class SwerveModule extends SubsystemBase{
         this.driveMotorID = driveMotorID;
         this.encoderID = encoderID;
 
+        TalonFX primaryDriveMotor = new TalonFX(driveMotorID);
+        TalonFX primarySteerMotor = new TalonFX(steerMotorID);
+        CANcoder primaryModuleEncoder = new CANcoder(encoderID, new CANBus("*"));
+
+        TalonFX secondaryDriveMotor = new TalonFX(31);
+        TalonFX secondarySteerMotor = new TalonFX(32);
+        CANcoder secondaryModuleEncoder = new CANcoder(33, new CANBus("*"));
+
+        if (!primaryDriveMotor.isConnected() && !primarySteerMotor.isConnected() && !primaryModuleEncoder.isConnected()){
+            if (secondaryDriveMotor.isConnected() && secondarySteerMotor.isConnected() && secondaryModuleEncoder.isConnected()) {
+                driveMotor = secondaryDriveMotor;
+                steerMotor = secondarySteerMotor;
+                moduleEncoder = secondaryModuleEncoder;
+                primaryDriveMotor.close();
+                primarySteerMotor.close();
+                primaryModuleEncoder.close();
+            }
+            else {
+                secondaryDriveMotor.close();
+                secondarySteerMotor.close();
+                secondaryModuleEncoder.close();
+            }
+        }
+        else {
+            driveMotor = primaryDriveMotor;
+            steerMotor = primarySteerMotor;
+            moduleEncoder = primaryModuleEncoder;
+            secondaryDriveMotor.close();
+            secondarySteerMotor.close();
+            secondaryModuleEncoder.close();
+        }
+
+        
         //drive motor 
-        driveMotor = new TalonFX(driveMotorID);
         var driveMotorConfig = new TalonFXConfiguration();
         driveMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         driveMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -63,7 +95,6 @@ public class SwerveModule extends SubsystemBase{
         driveMotor.setPosition(0);
 
         //steer motor
-        steerMotor = new TalonFX(steerMotorID);
         var steerMotorConfig = new TalonFXConfiguration();
         steerMotorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         steerMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -71,7 +102,6 @@ public class SwerveModule extends SubsystemBase{
         steerMotor.getConfigurator().apply(steerMotorConfig);
         
         // module encoder
-        moduleEncoder = new CANcoder(encoderID, new CANBus("*"));
         var steerEncoderConfig = new CANcoderConfiguration();
         steerEncoderConfig.MagnetSensor.MagnetOffset = -Preferences.getDouble(EncoderPreferenceKey + encoderID, 0);
         steerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
