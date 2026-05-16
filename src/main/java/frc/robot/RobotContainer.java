@@ -15,6 +15,7 @@ import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.Intake;
+import frc.robot.Subsystems.Blinkin;
 
 public class RobotContainer {
     public CommandXboxController driveController = new CommandXboxController(0);
@@ -31,6 +32,8 @@ public class RobotContainer {
     public final Indexer indexer = new Indexer(Constants.Indexer.BottomRollerID, Constants.Indexer.TopRollerID);
     public final Shooter shooter = new Shooter(Constants.Shooter.MotorID);
     public final Intake intake = new Intake(Constants.Intake.ArmID, Constants.Intake.RollerID);
+
+    public final Blinkin blinkin = new Blinkin(0, Constants.Blinkin.SolidColors.GREEN);
 
     public RobotContainer() {
         drivetrain.setPose(pose);
