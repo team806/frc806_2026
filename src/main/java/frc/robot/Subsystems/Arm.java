@@ -63,6 +63,8 @@ public class Arm extends SubsystemBase {
 
         arm_follower.setControl(new Follower(ArmLeaderId, MotorAlignmentValue.Opposed));
 
+        armState = Constants.RobotState.ArmStates.Stowed;
+
         setDefaultCommand(deploy());
     }
 

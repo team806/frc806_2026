@@ -1,7 +1,6 @@
-package frc.robot.Subsystems;
+package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
@@ -10,7 +9,7 @@ import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Blinkin;
 
-public class RobotState extends SubsystemBase {
+public class RobotState extends Command {
     private Arm arm;
     private Indexer indexer;
     private Blinkin blinkin;
@@ -19,9 +18,11 @@ public class RobotState extends SubsystemBase {
         this.arm = arm;
         this.indexer = indexer;
         this.blinkin = blinkin;
+        addRequirements(blinkin);
     }
 
-    public void SetBlinkin() {
+    @Override
+    public void execute() {
         Constants.RobotState.ArmStates armState = arm.getState();
         Constants.RobotState.IndexerStates indexerState = indexer.getState();
 
@@ -37,12 +38,5 @@ public class RobotState extends SubsystemBase {
         else {
             blinkin.setColor(Constants.Blinkin.Strobe.WHITE.value);
         }
-
     }
-
-    @Override
-    public void periodic() {
-        SetBlinkin();
-    }
-
 }

@@ -25,6 +25,8 @@ public class Indexer extends SubsystemBase {
 
         topRoller.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
 
+        indexerState = Constants.RobotState.IndexerStates.Backwards;
+
         setDefaultCommand(idleIndex());
     }
 
