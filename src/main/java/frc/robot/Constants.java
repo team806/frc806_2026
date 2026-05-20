@@ -164,5 +164,22 @@ public class Constants {
             public final double value;
             SolidColors(double value) {this.value = value;}
         }
+
+        public enum Strobe {
+            RED(-0.11),
+            BLUE(-0.09),
+            GOLD(-0.07),
+            WHITE(-0.05),
+            COLOR1(0.15),
+            COLOR2(0.35);
+
+            public final double value;
+            Strobe(double value) {this.value = value;}
+        }
+    }
+
+    public interface RobotState {
+        public enum ArmStates {Stowed, Horizontal, Deployed;}
+        public enum IndexerStates {Backwards, Forwards, Stopped;}
     }
 }

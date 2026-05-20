@@ -9,20 +9,20 @@ import frc.robot.Constants;
 
 public class Blinkin extends SubsystemBase {
     private final PWMSparkMax blinkin;
-    private final Constants.Blinkin.SolidColors defaultColor;
+    private final double defaultColorValue;
 
-    public Blinkin(int PWMslot, Constants.Blinkin.SolidColors defaultColor) {
-        this.defaultColor = defaultColor;
+    public Blinkin(int PWMslot, double defaultColorValue) {
+        this.defaultColorValue = defaultColorValue;
         blinkin = new PWMSparkMax(PWMslot);
         setDefaultCommand(setDefaultColor());
     }
 
     public Command setDefaultColor() {
-        return run(() -> blinkin.set(defaultColor.value));
+        return run(() -> blinkin.set(defaultColorValue));
     }
 
-    public Command setColor(Constants.Blinkin.SolidColors color) {
-        return run(() -> blinkin.set(color.value));
+    public Command setColor(double colorValue) {
+        return run(() -> blinkin.set(colorValue));
     }
 
     public Command turnOffLEDs() {

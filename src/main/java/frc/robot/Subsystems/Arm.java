@@ -14,12 +14,14 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
     private final TalonFX arm_leader;
     private final TalonFX arm_follower;
+    private Constants.RobotState.ArmStates armState;
 
     @SuppressWarnings("removal")
     public Arm(int ArmLeaderId, int ArmFollowerId) {
@@ -69,6 +71,7 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmBottomPos));
+            armState = Constants.RobotState.ArmStates.Deployed;
         }, () -> {}).withName("Deploy");
         // return run(() -> {});
     }
@@ -77,6 +80,7 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmHorizontalPos));
+            armState = Constants.RobotState.ArmStates.Horizontal;
         }, () -> {}).withName("Bump");
         // return run(() -> {});
     }
@@ -85,8 +89,18 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmVerticalPos));
+            armState = Constants.RobotState.ArmStates.Stowed;
         }, () -> {}).withName("Top");
         // return run(() -> {});
+    }
+
+    public Constants.RobotState.ArmStates getState() {
+        return armState;
+    }
+
+    @Override
+    public void periodic() {
+        SmartDashboard.putString("Arm State", armState.name());
     }
 
     @Override
