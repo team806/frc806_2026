@@ -105,6 +105,7 @@ public class Pose extends SubsystemBase {
                         continue;
                     }
 
+                    //out of bounds filter
                     var pose = e.estimatedPose.toPose2d();
                     if (pose.getX() < 0 || pose.getX() > Constants.Pose.FieldLayout.getFieldLength() ||
                         pose.getY() < 0 || pose.getY() > Constants.Pose.FieldLayout.getFieldWidth()) {
