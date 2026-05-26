@@ -32,6 +32,7 @@ public class Pose extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private final Field2d field = new Field2d();
     private final HashMap<PhotonCamera, PhotonPoseEstimator> cameras= new HashMap<>();
+    private boolean hasReceivedFirstCameraUpdate = false;
 
     public Pose(SwerveDriveKinematics kinematics, Supplier<Rotation2d> rotationSupplier, Supplier<SwerveModulePosition[]> positionProvider) {
         for (Constants.Pose.Cameras cameraConfig: Constants.Pose.Cameras.values()) {
@@ -58,6 +59,14 @@ public class Pose extends SubsystemBase {
  
     @Override
     public void periodic() {
+        updateCameraPoses();
+
+        poseEstimator.update(rotationSupplier.get(), positionSupplier.get());
+
+        field.setRobotPose(poseEstimator.getEstimatedPosition());
+    }
+
+    public void updateCameraPoses() {
         for (Map.Entry<PhotonCamera, PhotonPoseEstimator> entry : cameras.entrySet()) {
             PhotonCamera camera = entry.getKey();
             PhotonPoseEstimator photonEstimator = entry.getValue();
@@ -71,40 +80,51 @@ public class Pose extends SubsystemBase {
                     var e = visionEstimate.get();
                     var targets = e.targetsUsed;
 
-                    //ambiguity filter
-                    if (targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) {
+                    //no results filter
+                    if (targets.size() == 0) {
+                        SmartDashboard.putString(camera.getName() + " rejection", "No tags");
                         continue;
                     }
 
-                    //no results filter
-                    if (targets.size() == 0) {
+                    //single target ambiguity filter
+                    if (targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) {
+                        SmartDashboard.putString(camera.getName() + " rejection", "Single tag ambiguity");
                         continue;
                     }
 
                     //height filter
                     if (Math.abs(e.estimatedPose.getZ()) > 0.5) {
+                        SmartDashboard.putString(camera.getName() + " rejection", "Height");
                         continue;
                     }
 
                     //teleportation filter
-                    if (e.estimatedPose.toPose2d()
-                            .getTranslation()
-                            .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5) {
+                    var distanceTraveled = e.estimatedPose.toPose2d().getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation());
+                    if (distanceTraveled > 0.5 && hasReceivedFirstCameraUpdate) {
+                        SmartDashboard.putString(camera.getName() + " rejection", "Teleportation");
+                        continue;
+                    }
+
+                    var pose = e.estimatedPose.toPose2d();
+                    if (pose.getX() < 0 || pose.getX() > Constants.Pose.FieldLayout.getFieldLength() ||
+                        pose.getY() < 0 || pose.getY() > Constants.Pose.FieldLayout.getFieldWidth()) {
+                        SmartDashboard.putString(camera.getName() + " rejection", "Out of bounds");
                         continue;
                     }
 
                     Matrix<N3, N1> stdDevs = getStdDevs(photonEstimator, e, result.getTargets());
                     poseEstimator.addVisionMeasurement(e.estimatedPose.toPose2d(), e.timestampSeconds, stdDevs);
+                    hasReceivedFirstCameraUpdate = true;
+                    SmartDashboard.putString(camera.getName() + " rejection", "No rejection");
 
                     double lag = Timer.getFPGATimestamp() - e.timestampSeconds;
-                    SmartDashboard.putNumber("Vision/MeasurementLag_s", lag);
+                    SmartDashboard.putNumber(camera.getName() + " vision lag", lag);
+                }
+                else {
+                    SmartDashboard.putString(camera.getName() + " rejection", "No estimate");
                 }
             }
         }
-
-        poseEstimator.update(rotationSupplier.get(), positionSupplier.get());
-
-        field.setRobotPose(poseEstimator.getEstimatedPosition());
     }
 
     private Matrix<N3, N1> getStdDevs(PhotonPoseEstimator photonEstimator, EstimatedRobotPose estimatedPose, List<PhotonTrackedTarget> targets) {

@@ -35,9 +35,6 @@ public class Constants {
     public static double controllerDeadband = 0.15; 
 
     public interface Pose {
-        public static final String CameraName = "front";
-        public static final Translation2d Position = new Translation2d(0, 0);
-
         // TODO: fix these fake values
         public static final Matrix<N3, N1> SingleTagStdDevs = VecBuilder.fill(0.1, 0.1, 999999);
         public static final Matrix<N3, N1> MultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
@@ -47,10 +44,6 @@ public class Constants {
             public static final double AngleStdDev = 0.1;
         }
 
-        public static final Transform3d RobotToCamera = new Transform3d(
-            new Translation3d(0, 0, 0),
-            new Rotation3d(0, 0, 0)
-        );
         public static final AprilTagFieldLayout FieldLayout =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
