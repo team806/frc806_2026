@@ -1,8 +1,7 @@
 package frc.robot.Subsystems;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
@@ -31,14 +30,15 @@ public class Pose extends SubsystemBase {
     private final Supplier<SwerveModulePosition[]> positionSupplier;
     private final SwerveDrivePoseEstimator poseEstimator;
     private final Field2d field = new Field2d();
-    private final HashMap<PhotonCamera, PhotonPoseEstimator> cameras= new HashMap<>();
+    public record CameraSetup(PhotonCamera camera, PhotonPoseEstimator estimator) {}
+    private final List<CameraSetup> cameras = new ArrayList<>();
     private boolean hasReceivedFirstCameraUpdate = false;
 
     public Pose(SwerveDriveKinematics kinematics, Supplier<Rotation2d> rotationSupplier, Supplier<SwerveModulePosition[]> positionProvider) {
-        for (Constants.Pose.Cameras cameraConfig: Constants.Pose.Cameras.values()) {
+        for (Constants.Pose.Camera cameraConfig: Constants.Pose.Cameras) {
             PhotonCamera cameraInstance = new PhotonCamera(cameraConfig.name());
-            PhotonPoseEstimator estimatorInstance = new PhotonPoseEstimator(Constants.Pose.FieldLayout, cameraConfig.offset);
-            cameras.put(cameraInstance, estimatorInstance);
+            PhotonPoseEstimator estimatorInstance = new PhotonPoseEstimator(Constants.Pose.FieldLayout, cameraConfig.transform());
+            cameras.add(new CameraSetup(cameraInstance, estimatorInstance));
         }
 
         this.rotationSupplier = rotationSupplier;
@@ -67,9 +67,9 @@ public class Pose extends SubsystemBase {
     }
 
     public void updateCameraPoses() {
-        for (Map.Entry<PhotonCamera, PhotonPoseEstimator> entry : cameras.entrySet()) {
-            PhotonCamera camera = entry.getKey();
-            PhotonPoseEstimator photonEstimator = entry.getValue();
+        for (CameraSetup setup : cameras) {
+            PhotonCamera camera = setup.camera();
+            PhotonPoseEstimator photonEstimator = setup.estimator();
             for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
                 var visionEstimate = photonEstimator.estimateCoprocMultiTagPose(result);
                 if (visionEstimate.isEmpty()) {

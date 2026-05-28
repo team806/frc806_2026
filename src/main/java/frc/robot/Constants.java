@@ -1,5 +1,8 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -47,20 +50,15 @@ public class Constants {
         public static final AprilTagFieldLayout FieldLayout =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
 
-        public enum Cameras {
-            front(
+        public record Camera(String name, Transform3d transform) {}
+        public static List<Camera> Cameras = new ArrayList<>(List.of(
+            new Camera("front", 
                 new Transform3d(
                     new Translation3d(0, 0, 0),
                     new Rotation3d(0, 0, 0)
                 )
-            );
-
-            public final Transform3d offset;
-
-            Cameras(Transform3d offset) {
-                this.offset = offset;
-            }
-        }
+            )
+        ));
     }
 
     public interface Drivetrain {
