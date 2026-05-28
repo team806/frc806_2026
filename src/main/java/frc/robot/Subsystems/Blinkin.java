@@ -20,15 +20,15 @@ public class Blinkin extends SubsystemBase {
         setDefaultCommand(new RobotState(arm, indexer, this));
     }
 
-    public Command setDefaultColor() {
-        return run(() -> blinkin.set(defaultColorValue));
+    public void setDefaultColor() {
+        blinkin.set(defaultColorValue);
     }
 
-    public Command setColor(double colorValue) {
-        return run(() -> blinkin.set(colorValue));
+    public void setColor(double colorValue) {
+        blinkin.set(colorValue);
     }
 
-    public Command turnOffLEDs() {
-        return run(() -> blinkin.set(Constants.Blinkin.SolidColors.BLACK.value));
+    public void turnOffLEDs() {
+        blinkin.set(Constants.Blinkin.SolidColors.BLACK.value);
     }
 }

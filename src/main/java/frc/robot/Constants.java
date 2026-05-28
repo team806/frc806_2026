@@ -176,6 +176,22 @@ public class Constants {
             public final double value;
             Strobe(double value) {this.value = value;}
         }
+
+        public enum Heartbeat {
+            RED(-0.25),
+            BLUE(-0.23),
+            WHITE(-0.21),
+            GRAY(-0.19),
+            COLOR1SLOW(0.03),
+            COLOR1MEDIUM(0.05),
+            COLOR1FAST(0.07),
+            COLOR2SLOW(0.23),
+            COLOR2MEDIUM(0.25),
+            COLOR2FAST(0.27);
+
+            public final double value;
+            Heartbeat(double value) {this.value = value;}
+        }
     }
 
     public interface RobotState {
