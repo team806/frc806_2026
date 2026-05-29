@@ -94,6 +94,7 @@ public class Constants {
         public static final int TopRollerID = 16;
         public static final double ceilingIdleVoltage = 2.4;
         public static final double ceilingIndexVoltage = 8.4;
+        public enum States {Backwards, Forwards, Stopped;}
     }
 
     public interface Shooter {
@@ -124,6 +125,7 @@ public class Constants {
         public static final double ArmVerticalPos = 0.12;
         public static final double ArmBackPos = 0.345;
         public static final double GearRatio = 23.0;
+        public enum States {Stowed, Horizontal, Deployed;}
     }
 
     public interface Intake {
@@ -192,10 +194,5 @@ public class Constants {
             public final double value;
             Heartbeat(double value) {this.value = value;}
         }
-    }
-
-    public interface RobotState {
-        public enum ArmStates {Stowed, Horizontal, Deployed;}
-        public enum IndexerStates {Backwards, Forwards, Stopped;}
     }
 }

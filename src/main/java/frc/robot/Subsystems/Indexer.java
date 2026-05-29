@@ -13,7 +13,7 @@ import frc.robot.Constants;
 
 public class Indexer extends SubsystemBase {
     private final SparkFlex topRoller;
-    private Constants.RobotState.IndexerStates indexerState;
+    private Constants.Indexer.States indexerState;
 
     @SuppressWarnings("removal")
     public Indexer(int topRollerID) {
@@ -25,7 +25,7 @@ public class Indexer extends SubsystemBase {
 
         topRoller.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
 
-        indexerState = Constants.RobotState.IndexerStates.Backwards;
+        indexerState = Constants.Indexer.States.Backwards;
 
         setDefaultCommand(idleIndex());
     }
@@ -33,7 +33,7 @@ public class Indexer extends SubsystemBase {
     public Command idleIndex() {
         return runEnd(() -> {
             topRoller.setVoltage(-Constants.Indexer.ceilingIdleVoltage);
-            indexerState = Constants.RobotState.IndexerStates.Backwards;
+            indexerState = Constants.Indexer.States.Backwards;
         }, () -> {}).withName("Idle index");
         // return run(() -> {});
     }
@@ -41,7 +41,7 @@ public class Indexer extends SubsystemBase {
     public Command index() {
         return runEnd(() -> {
             topRoller.setVoltage(Constants.Indexer.ceilingIndexVoltage);
-            indexerState = Constants.RobotState.IndexerStates.Forwards;
+            indexerState = Constants.Indexer.States.Forwards;
         }, () -> {}).withName("Index");
         // return run(() -> {});
     }
@@ -49,12 +49,12 @@ public class Indexer extends SubsystemBase {
     public Command stop() {
         return runEnd(() -> {
             topRoller.setVoltage(0);
-            indexerState = Constants.RobotState.IndexerStates.Stopped;
+            indexerState = Constants.Indexer.States.Stopped;
         }, () -> {}).withName("Stop indexer");
         // return run(() -> {});
     }
 
-    public Constants.RobotState.IndexerStates getState() {
+    public Constants.Indexer.States getState() {
         return indexerState;
     }
 

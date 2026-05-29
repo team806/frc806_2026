@@ -21,7 +21,7 @@ import frc.robot.Constants;
 public class Arm extends SubsystemBase {
     private final TalonFX arm_leader;
     private final TalonFX arm_follower;
-    private Constants.RobotState.ArmStates armState;
+    private Constants.Arm.States armState;
 
     @SuppressWarnings("removal")
     public Arm(int ArmLeaderId, int ArmFollowerId) {
@@ -63,7 +63,7 @@ public class Arm extends SubsystemBase {
 
         arm_follower.setControl(new Follower(ArmLeaderId, MotorAlignmentValue.Opposed));
 
-        armState = Constants.RobotState.ArmStates.Stowed;
+        armState = Constants.Arm.States.Deployed;
 
         setDefaultCommand(deploy());
     }
@@ -73,7 +73,7 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmBottomPos));
-            armState = Constants.RobotState.ArmStates.Deployed;
+            armState = Constants.Arm.States.Deployed;
         }, () -> {}).withName("Deploy");
         // return run(() -> {});
     }
@@ -82,7 +82,7 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmHorizontalPos));
-            armState = Constants.RobotState.ArmStates.Horizontal;
+            armState = Constants.Arm.States.Horizontal;
         }, () -> {}).withName("Bump");
         // return run(() -> {});
     }
@@ -91,12 +91,12 @@ public class Arm extends SubsystemBase {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
             arm_leader.setControl(request.withPosition(Constants.Arm.ArmVerticalPos));
-            armState = Constants.RobotState.ArmStates.Stowed;
+            armState = Constants.Arm.States.Stowed;
         }, () -> {}).withName("Top");
         // return run(() -> {});
     }
 
-    public Constants.RobotState.ArmStates getState() {
+    public Constants.Arm.States getState() {
         return armState;
     }
 

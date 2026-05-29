@@ -23,20 +23,20 @@ public class RobotState extends Command {
 
     @Override
     public void execute() {
-        Constants.RobotState.ArmStates armState = arm.getState();
-        Constants.RobotState.IndexerStates indexerState = indexer.getState();
+        Constants.Arm.States armState = arm.getState();
+        Constants.Indexer.States indexerState = indexer.getState();
 
-        if (armState == Constants.RobotState.ArmStates.Deployed && indexerState == Constants.RobotState.IndexerStates.Forwards) {
+        if (armState == Constants.Arm.States.Deployed && indexerState == Constants.Indexer.States.Forwards) {
             blinkin.setColor(Constants.Blinkin.SolidColors.VIOLET.value);
         }
-        else if (armState == Constants.RobotState.ArmStates.Deployed) {
-            blinkin.setColor(Constants.Blinkin.Strobe.BLUE.value);
+        else if (armState == Constants.Arm.States.Deployed) {
+            blinkin.setColor(Constants.Blinkin.SolidColors.BLUE.value);
         }
-        else if (indexerState == Constants.RobotState.IndexerStates.Forwards) {
-            blinkin.setColor(Constants.Blinkin.Strobe.RED.value);
+        else if (indexerState == Constants.Indexer.States.Forwards) {
+            blinkin.setColor(Constants.Blinkin.SolidColors.RED.value);
         }
         else {
-            blinkin.setColor(Constants.Blinkin.Strobe.WHITE.value);
+            blinkin.setColor(Constants.Blinkin.SolidColors.WHITE.value);
         }
     }
 }
