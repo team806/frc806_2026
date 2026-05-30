@@ -10,7 +10,6 @@ import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.Pose;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Shooter;
@@ -29,8 +28,7 @@ public class RobotContainer {
     private final Trigger drivekLeftBumper = driveController.leftBumper();
     private final Trigger drivekRightBumper = driveController.rightBumper();
 
-    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController);
-    public final Pose pose = new Pose(Constants.Pose.CameraName, drivetrain::getKinematics, drivetrain::getGyroscopeRotation, drivetrain::getModulePositions);
+    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController, Constants.Drivetrain.CameraName);
     
     public final Indexer indexer = new Indexer(Constants.Indexer.TopRollerID);
     public final Shooter shooter = new Shooter(Constants.Shooter.MotorID);
@@ -40,8 +38,6 @@ public class RobotContainer {
     public final Blinkin blinkin = new Blinkin(0, Constants.Blinkin.SolidColors.GREEN);
 
     public RobotContainer() {
-        drivetrain.setPose(pose);
-
         configureBindings();
         configureNamedCommands();
 
