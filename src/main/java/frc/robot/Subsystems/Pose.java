@@ -42,7 +42,7 @@ public class Pose extends SubsystemBase {
     private final Supplier<Rotation2d> rotationSupplier;
     private final Supplier<SwerveModulePosition[]> positionSupplier;
     private final SwerveDriveKinematics kinematics;
-    private final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(Constants.Pose.FieldLayout, Constants.Pose.RobotToCamera);
+    private final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(Constants.Drivetrain.FieldLayout, Constants.Drivetrain.RobotToCamera);
     private final SwerveDrivePoseEstimator poseEstimator;
     private final Field2d field = new Field2d();
 
@@ -57,8 +57,8 @@ public class Pose extends SubsystemBase {
             rotationSupplier.get(),
             positionSupplier.get(),
             new Pose2d(),
-            VecBuilder.fill(Constants.Pose.Odometry.PositionStdDev, Constants.Pose.Odometry.PositionStdDev, Constants.Pose.Odometry.AngleStdDev),
-            VecBuilder.fill(Constants.Pose.Odometry.PositionStdDev, Constants.Pose.Odometry.PositionStdDev, 999999)
+            VecBuilder.fill(Constants.Drivetrain.Odometry.PositionStdDev, Constants.Drivetrain.Odometry.PositionStdDev, Constants.Drivetrain.Odometry.AngleStdDev),
+            VecBuilder.fill(Constants.Drivetrain.Odometry.PositionStdDev, Constants.Drivetrain.Odometry.PositionStdDev, 999999)
         );
 
         SmartDashboard.putData("Field", field);
@@ -72,7 +72,7 @@ public class Pose extends SubsystemBase {
                 visionEstimate = photonEstimator.estimateLowestAmbiguityPose(result);
             }
             
-            Matrix<N3, N1> stdDevs = visionEstimate.map(e -> getStdDevs(e, result.getTargets())).orElse(Constants.Pose.SingleTagStdDevs);
+            Matrix<N3, N1> stdDevs = visionEstimate.map(e -> getStdDevs(e, result.getTargets())).orElse(Constants.Drivetrain.SingleTagStdDevs);
 
             SmartDashboard.putNumber("stddev", stdDevs.get(0, 0));
 
@@ -91,7 +91,7 @@ public class Pose extends SubsystemBase {
     }
 
     private Matrix<N3, N1> getStdDevs(EstimatedRobotPose estimatedPose, List<PhotonTrackedTarget> targets) {
-        var estStdDevs = Constants.Pose.SingleTagStdDevs;
+        var estStdDevs = Constants.Drivetrain.SingleTagStdDevs;
         int numTags = 0;
         double avgDist = 0;
 
@@ -112,7 +112,7 @@ public class Pose extends SubsystemBase {
             avgDist /= numTags;
             // Decrease std devs if multiple targets are visible
             if (numTags > 1) {
-                estStdDevs = Constants.Pose.MultiTagStdDevs;
+                estStdDevs = Constants.Drivetrain.MultiTagStdDevs;
             } 
             // Increase std devs based on (average) distance
             if (numTags == 1 && avgDist > 4) {

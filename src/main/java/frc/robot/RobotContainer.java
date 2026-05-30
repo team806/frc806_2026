@@ -13,7 +13,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Subsystems.Pose;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Shooter;
@@ -32,16 +31,13 @@ public class RobotContainer {
     private final Trigger drivekLeftBumper = driveController.leftBumper();
     private final Trigger drivekRightBumper = driveController.rightBumper();
 
-    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController);
-    public final Pose pose = new Pose(Constants.Pose.CameraName, drivetrain::getKinematics, drivetrain::getGyroscopeRotation, drivetrain::getModulePositions);
+    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController, Constants.Drivetrain.CameraName);
     
     // public final Indexer indexer = new Indexer(Constants.Indexer.BottomRollerID, Constants.Indexer.TopRollerID);
     // public final Shooter shooter = new Shooter(Constants.Shooter.MotorID);
     // public final Intake intake = new Intake(Constants.Intake.ArmID, Constants.Intake.RollerID);
 
     public RobotContainer() {
-        drivetrain.setPose(pose);
-
         configureBindings();
 
         SmartDashboard.putData(CommandScheduler.getInstance());
