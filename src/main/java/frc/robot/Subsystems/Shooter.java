@@ -73,8 +73,8 @@ public class Shooter extends SubsystemBase {
     public void shooter_debug() {
         double currentRPS = encoder.getVelocity();
         double target = shootRPS;
-        // SmartDashboard.putNumber("Shooter RPS", currentRPS);
-        // SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
+        SmartDashboard.putNumber("Shooter RPS", currentRPS);
+        SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
         SmartDashboard.putNumber("Shooter error", target - currentRPS);
         speed_alert(check_correct_speed(target, currentRPS));
     }
