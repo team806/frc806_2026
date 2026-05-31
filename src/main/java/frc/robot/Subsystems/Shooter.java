@@ -73,8 +73,8 @@ public class Shooter extends SubsystemBase {
     public void shooter_debug() {
         double currentRPS = encoder.getVelocity();
         double target = shootRPS;
-        SmartDashboard.putNumber("Shooter RPS", currentRPS);
-        SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
+        // SmartDashboard.putNumber("Shooter RPS", currentRPS);
+        // SmartDashboard.putNumber("Shooter RPM", currentRPS * 60.0);
         SmartDashboard.putNumber("Shooter error", target - currentRPS);
         speed_alert(check_correct_speed(target, currentRPS));
     }
@@ -93,6 +93,14 @@ public class Shooter extends SubsystemBase {
         // return run(() -> {});
     }
 
+    public void setRPS(double rpm) {
+        shootRPS = rpm/60.0;
+    }
+
+    public double getRPM() {
+        return shootRPS * 60.0;
+    }
+
     @Override
     public void periodic() {
         shooter_debug();
@@ -100,5 +108,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("Shooter target rpm", () -> getRPM(), (rpm) -> setRPS(rpm));
     }
 }
