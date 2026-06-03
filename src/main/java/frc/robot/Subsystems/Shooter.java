@@ -27,7 +27,7 @@ public class Shooter extends SubsystemBase {
     private final SimpleMotorFeedforward ff = new SimpleMotorFeedforward(Constants.Shooter.kS, Constants.Shooter.kV);
     
     private final Alert shooterGoodAlert = new Alert("Shooter at target speed!", AlertType.kInfo);
-    private final Alert shooterBadAlert = new Alert("Shooter not at target speed!", AlertType.kInfo);
+    private final Alert shooterBadAlert = new Alert("Shooter not at target speed!", AlertType.kWarning);
 
     @SuppressWarnings("removal")
     public Shooter(int MotorID) {
@@ -38,6 +38,8 @@ public class Shooter extends SubsystemBase {
         config.inverted(true);
         config.encoder.velocityConversionFactor(1.0 / 60.0);
         shooter.configure(config, SparkFlex.ResetMode.kResetSafeParameters, SparkFlex.PersistMode.kPersistParameters);
+
+        SmartDashboard.putData("Shooter subsystem", this);
 
         setDefaultCommand(shoot());
     }
@@ -93,6 +95,19 @@ public class Shooter extends SubsystemBase {
         // return run(() -> {});
     }
 
+    public void setRPSfromRPM(double rpm) {
+        if (!Double.isFinite(rpm)) {
+            System.out.println("Invalid shooter set value!");
+            return;
+        }
+        shootRPS = rpm / 60.0;
+        System.out.println("Successfully set shooter rpm to " + rpm);
+    }
+
+    public double getRPM() {
+        return shootRPS * 60.0;
+    }
+
     @Override
     public void periodic() {
         shooter_debug();
@@ -100,5 +115,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("Shooter target rpm", this::getRPM, this::setRPSfromRPM);
     }
 }
