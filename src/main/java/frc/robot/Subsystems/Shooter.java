@@ -115,7 +115,6 @@ public class Shooter extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        super.initSendable(builder);
         builder.addDoubleProperty("Shooter target rpm", this::getRPM, this::setRPSfromRPM);
     }
 }
