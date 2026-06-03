@@ -30,7 +30,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class Drivetrain extends SubsystemBase {
-    boolean isWaitingToCalibrate;
     Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
@@ -110,7 +109,7 @@ public class Drivetrain extends SubsystemBase {
     
     public Command calibrate() {
         return parallel(
-            runOnce(() -> {isWaitingToCalibrate = false; System.out.println("Swerve calibration triggered");}),
+            runOnce(() -> {System.out.println("Swerve calibration triggered");}),
             modules[0].calibrate(),
             modules[1].calibrate(),
             modules[2].calibrate(),
