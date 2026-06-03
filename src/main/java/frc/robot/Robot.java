@@ -22,8 +22,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void robotInit() {
-        m_robotContainer = new RobotContainer();
         SignalLogger.enableAutoLogging(false);
+        m_robotContainer = new RobotContainer();
         m_PDH = new PowerDistribution(1, ModuleType.kRev);
         SmartDashboard.putData("PDH", m_PDH);
     }
