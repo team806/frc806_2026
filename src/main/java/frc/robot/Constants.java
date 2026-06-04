@@ -120,12 +120,11 @@ public class Constants {
         public static final double kD = 0;
         public static final double MotionMagicCruiseVelocity = 75;
         public static final double MotionMagicAcceleration = 2;
-        public static final double ArmBottomPos = 0;
-        public static final double ArmHorizontalPos = 0;
+        public static final double ArmDeployPos = 0;
         public static final double ArmVerticalPos = 0.12;
         public static final double ArmBackPos = 0.345;
         public static final double GearRatio = 23.0;
-        public enum States {Stowed, Horizontal, Deployed;}
+        public enum States {Deployed, Deployed_Vertical, Vertical, Vertical_Back, Back;}
     }
 
     public interface Intake {

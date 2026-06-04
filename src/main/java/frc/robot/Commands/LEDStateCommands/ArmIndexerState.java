@@ -2,19 +2,17 @@ package frc.robot.Commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
 
-import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
-
 import frc.robot.Constants;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Blinkin;
 
-public class RobotState extends Command {
+public class ArmIndexerState extends Command {
     private Arm arm;
     private Indexer indexer;
     private Blinkin blinkin;
 
-    public RobotState(Arm arm, Indexer indexer, Blinkin blinkin) {
+    public ArmIndexerState(Arm arm, Indexer indexer, Blinkin blinkin) {
         this.arm = arm;
         this.indexer = indexer;
         this.blinkin = blinkin;

@@ -5,7 +5,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
-import frc.robot.Commands.RobotState;
+import frc.robot.Commands.ArmIndexerState;
+import frc.robot.Commands.ArmState;
+import frc.robot.Commands.IndexerState;
+
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Constants;
@@ -17,7 +20,7 @@ public class Blinkin extends SubsystemBase {
     public Blinkin(int PWMslot, double defaultColorValue, Arm arm, Indexer indexer) {
         this.defaultColorValue = defaultColorValue;
         blinkin = new PWMSparkMax(PWMslot);
-        setDefaultCommand(new RobotState(arm, indexer, this));
+        setDefaultCommand(new ArmIndexerState(arm, indexer, this));
     }
 
     public void setDefaultColor() {

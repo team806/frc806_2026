@@ -27,6 +27,8 @@ public class Indexer extends SubsystemBase {
 
         indexerState = Constants.Indexer.States.Backwards;
 
+        SmartDashboard.putData("Indexer subsystem", this);
+
         setDefaultCommand(idleIndex());
     }
 
@@ -59,11 +61,10 @@ public class Indexer extends SubsystemBase {
     }
 
     @Override
-    public void periodic() {
-        SmartDashboard.putString("Indexer State", indexerState.name());
-    }
+    public void periodic() {}
 
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty("Indexer state", () -> this.getState().name(), null);
     }
 }
