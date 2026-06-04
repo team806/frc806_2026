@@ -37,7 +37,7 @@ public class RobotContainer {
     public final Intake intake = new Intake(Constants.Intake.RollerID);
     public final Arm arm = new Arm(Constants.Arm.ArmLeaderID, Constants.Arm.ArmFollowerID);
 
-    public final Blinkin blinkin = new Blinkin(0, Constants.Blinkin.SolidColors.GREEN);
+    public final Blinkin blinkin = new Blinkin(0, Constants.Blinkin.SolidColors.WHITE.value, arm, indexer);
 
     public RobotContainer() {
         drivetrain.setPose(pose);

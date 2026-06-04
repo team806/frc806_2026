@@ -4,6 +4,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -14,17 +15,22 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
-    private final TalonFX arm_leader;
-    private final TalonFX arm_follower;
+    private final TalonFX armLeader;
+    private final TalonFX armFollower;
+    private final CANcoder armEncoder;
+    private Constants.Arm.States armTargetState;
 
     @SuppressWarnings("removal")
     public Arm(int ArmLeaderId, int ArmFollowerId) {
-        arm_leader = new TalonFX(ArmLeaderId);
-        arm_follower = new TalonFX(ArmFollowerId);
+        armLeader = new TalonFX(ArmLeaderId);
+        armFollower = new TalonFX(ArmFollowerId);
+        armEncoder = new CANcoder(Constants.Arm.ArmEncoderId);
+
         TalonFXConfiguration armConfig = new TalonFXConfiguration();
 
         armConfig.Feedback.FeedbackRemoteSensorID = Constants.Arm.ArmEncoderId;
@@ -49,7 +55,7 @@ public class Arm extends SubsystemBase {
         // motionMagicConfigs.MotionMagicJerk = 300;
 
         armConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-        armConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Arm.ArmBottomPos;
+        armConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.Arm.ArmDeployPos;
         armConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
         armConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.Arm.ArmBackPos;
         armConfig.ClosedLoopGeneral.ContinuousWrap = false;
@@ -57,9 +63,13 @@ public class Arm extends SubsystemBase {
 
         armConfig.Feedback.RotorToSensorRatio = Constants.Arm.GearRatio;
 
-        arm_leader.getConfigurator().apply(armConfig);
+        armLeader.getConfigurator().apply(armConfig);
 
-        arm_follower.setControl(new Follower(ArmLeaderId, MotorAlignmentValue.Opposed));
+        armFollower.setControl(new Follower(ArmLeaderId, MotorAlignmentValue.Opposed));
+
+        armTargetState = Constants.Arm.States.Deployed;
+
+        SmartDashboard.putData("Arm subsystem", this);
 
         setDefaultCommand(deploy());
     }
@@ -68,7 +78,8 @@ public class Arm extends SubsystemBase {
     public Command deploy() {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
-            arm_leader.setControl(request.withPosition(Constants.Arm.ArmBottomPos));
+            armLeader.setControl(request.withPosition(Constants.Arm.ArmDeployPos));
+            armTargetState = Constants.Arm.States.Deployed;
         }, () -> {}).withName("Deploy");
         // return run(() -> {});
     }
@@ -76,7 +87,8 @@ public class Arm extends SubsystemBase {
     public Command bump() {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
-            arm_leader.setControl(request.withPosition(Constants.Arm.ArmHorizontalPos));
+            armLeader.setControl(request.withPosition(Constants.Arm.ArmVerticalPos));
+            armTargetState = Constants.Arm.States.Vertical;
         }, () -> {}).withName("Bump");
         // return run(() -> {});
     }
@@ -84,12 +96,51 @@ public class Arm extends SubsystemBase {
     public Command top() {
         return runEnd(() -> {
             final MotionMagicVoltage request = new MotionMagicVoltage(0);
-            arm_leader.setControl(request.withPosition(Constants.Arm.ArmVerticalPos));
+            armLeader.setControl(request.withPosition(Constants.Arm.ArmBackPos));
+            armTargetState = Constants.Arm.States.Back;
         }, () -> {}).withName("Top");
         // return run(() -> {});
     }
 
+    public Constants.Arm.States getState() {
+        return armTargetState;
+    }
+
+    public boolean approximatelyEquals(double a, double b, double tolerance) {
+        return Math.abs(a-b) < tolerance;
+    }
+
+    public boolean isBetween(double x, double y, double target) {
+        return ((x <= target && target <= y) || (y <= target && target <= x));
+    }
+
+    public Constants.Arm.States getActualState() {
+        double currentArmPos = armEncoder.getAbsolutePosition().getValueAsDouble();
+        double tolerance = 0.01;
+        if (approximatelyEquals(currentArmPos, Constants.Arm.ArmDeployPos, tolerance)) {
+            return Constants.Arm.States.Deployed;
+        }
+        else if (approximatelyEquals(currentArmPos, Constants.Arm.ArmVerticalPos, tolerance)) {
+            return Constants.Arm.States.Vertical;
+        }
+        else if (approximatelyEquals(currentArmPos, Constants.Arm.ArmBackPos, tolerance)) {
+            return Constants.Arm.States.Back;
+        }
+        else if (isBetween(Constants.Arm.ArmDeployPos, Constants.Arm.ArmVerticalPos, currentArmPos)) {
+            return Constants.Arm.States.Deployed_Vertical;
+        }
+        else if (isBetween(Constants.Arm.ArmVerticalPos, Constants.Arm.ArmBackPos, currentArmPos)) {
+            return Constants.Arm.States.Vertical_Back;
+        }
+        return armTargetState;
+    }
+
+    @Override
+    public void periodic() {}
+
     @Override
     public void initSendable(SendableBuilder builder) {
+        builder.addStringProperty("Arm target state", () -> this.getState().name(), null);
+        builder.addStringProperty("Arm actual state", () -> this.getActualState().name(), null);
     }
 }
