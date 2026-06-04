@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -30,7 +31,6 @@ import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 public class Drivetrain extends SubsystemBase {
-    boolean isWaitingToCalibrate;
     Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
@@ -110,7 +110,7 @@ public class Drivetrain extends SubsystemBase {
     
     public Command calibrate() {
         return parallel(
-            runOnce(() -> {isWaitingToCalibrate = false; System.out.println("Swerve calibration triggered");}),
+            runOnce(() -> {System.out.println("Swerve calibration triggered");}),
             modules[0].calibrate(),
             modules[1].calibrate(),
             modules[2].calibrate(),
@@ -162,4 +162,9 @@ public class Drivetrain extends SubsystemBase {
 
     @Override
     public void periodic() {}
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        //add elastic swerve widget
+    }
 }
