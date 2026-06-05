@@ -1,5 +1,8 @@
 package frc.robot;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -35,9 +38,6 @@ public class Constants {
     public static double controllerDeadband = 0.15; 
 
     public interface Pose {
-        public static final String CameraName = "front";
-        public static final Translation2d Position = new Translation2d(0, 0);
-
         // TODO: fix these fake values
         public static final Matrix<N3, N1> SingleTagStdDevs = VecBuilder.fill(0.1, 0.1, 999999);
         public static final Matrix<N3, N1> MultiTagStdDevs = VecBuilder.fill(0.5, 0.5, 1);
@@ -47,12 +47,18 @@ public class Constants {
             public static final double AngleStdDev = 0.1;
         }
 
-        public static final Transform3d RobotToCamera = new Transform3d(
-            new Translation3d(0, 0, 0),
-            new Rotation3d(0, 0, 0)
-        );
         public static final AprilTagFieldLayout FieldLayout =
                 AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+
+        public record Camera(String name, Transform3d transform) {}
+        public static List<Camera> Cameras = new ArrayList<>(List.of(
+            new Camera("front", 
+                new Transform3d(
+                    new Translation3d(0, 0, 0),
+                    new Rotation3d(0, 0, 0)
+                )
+            )
+        ));
     }
 
     public interface Drivetrain {
