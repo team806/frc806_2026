@@ -45,6 +45,6 @@ public class RobotContainer {
 
     private void configureBindings() {
         // driveRightTrigger.whileTrue(parallel(indexer.index(), shooter.shoot()));
-        driveRightTrigger.whileTrue(drivetrain.aimAtTag(7, new Translation2d(-1, -0.5), Rotation2d.fromDegrees(-135)));
+        driveRightTrigger.whileTrue(drivetrain.aimAtTag(6, new Translation2d(-1, 0), Rotation2d.fromDegrees(-180)));
     }
 }

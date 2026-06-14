@@ -20,6 +20,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.Alert;
@@ -71,6 +72,10 @@ public class Drivetrain extends SubsystemBase {
     private final PIDController visionForwardBackController = new PIDController(2.5, 0, 0);
     private final PIDController visionSidewaysController = new PIDController(2.5, 0, 0);
     private final PIDController visionRotationsController = new PIDController(0, 0, 0);
+
+    private final TrapezoidProfile forwardProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.2, 1));
+    private final TrapezoidProfile sidewaysProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.2, 1));
+    private final TrapezoidProfile rotationProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(0.5, 1));
 
     private final Alert willCalibrateAlert = new Alert("Robot will enter drivetrain calibration when re-enabled", AlertType.kInfo);
     private final Alert calibratingAlert = new Alert("Drivetrain can be calibrated. Align wheels when disabled and calibrate or cancel", AlertType.kInfo);
@@ -142,6 +147,8 @@ public class Drivetrain extends SubsystemBase {
             }
 
             visionEstimate.ifPresent(e -> {
+                System.out.println("Has vision estimate " + e.estimatedPose.toPose2d());
+
                 var targets = e.targetsUsed;
                 if ((targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) ||
                         targets.size() == 0) {
@@ -149,12 +156,6 @@ public class Drivetrain extends SubsystemBase {
                 }
 
                 if (Math.abs(e.estimatedPose.getZ()) > 0.5) {
-                    return;
-                }
-
-                if (e.estimatedPose.toPose2d()
-                        .getTranslation()
-                        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5) {
                     return;
                 }
 
@@ -253,9 +254,8 @@ public class Drivetrain extends SubsystemBase {
 
             return run(()-> {
                 var robotPose = getPose();
-
-                var forwardVelocity = -visionForwardBackController.calculate(robotPose.getX(), targetPose.getX());
-                var sidewaysVelocity = -visionSidewaysController.calculate(robotPose.getY(), targetPose.getY());
+                var forwardVelocity = visionForwardBackController.calculate(robotPose.getX(), targetPose.getX());
+                var sidewaysVelocity = visionSidewaysController.calculate(robotPose.getY(), targetPose.getY());
                 var angularVelcoity = visionRotationsController.calculate(robotPose.getRotation().getRotations(), targetPose.getRotation().getRotations());
 
                 var speeds = new ChassisSpeeds(forwardVelocity, sidewaysVelocity, angularVelcoity);

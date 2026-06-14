@@ -68,7 +68,7 @@ public class SwerveModule extends SubsystemBase{
         driveMotorConfig.CurrentLimits.SupplyCurrentLowerLimit = Constants.Drivetrain.DriveMotorsLowSupplyCurrentLimit;
         driveMotorConfig.CurrentLimits.SupplyCurrentLowerTime = Constants.Drivetrain.DriveMotorsHighSupplyCurrentSeconds;
         driveMotorConfig.Feedback.SensorToMechanismRatio = 1/DRIVE_POSITION_CONVERSION;
-        driveMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        driveMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveMotor.getConfigurator().apply(driveMotorConfig);
         driveMotor.setPosition(0);
 
@@ -110,7 +110,7 @@ public class SwerveModule extends SubsystemBase{
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
         // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
         targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
-        var clampedSpeed = MathUtil.clamp(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS, -0.1, 0.1);
+        var clampedSpeed = MathUtil.clamp(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS, -1, 1);
         var slewedSpeed = srl.calculate(clampedSpeed);
         driveMotor.set(slewedSpeed); 
     }
