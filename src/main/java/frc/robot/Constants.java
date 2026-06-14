@@ -57,7 +57,7 @@ public class Constants {
         );
 
         List<AprilTag> Tags = List.of(
-            new AprilTag(7, new Pose3d(
+            new AprilTag(6, new Pose3d(
                 new Translation3d(5, 2.5, 0.3048),
                 new Rotation3d(0, 0, Rotation2d.fromDegrees(180).getRadians())
             ))
