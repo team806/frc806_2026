@@ -52,7 +52,7 @@ public class Constants {
             new Rotation3d(0, 0, 0)
         );
         public static final AprilTagFieldLayout FieldLayout =
-                AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+            AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
     }
 
     public interface Drivetrain {

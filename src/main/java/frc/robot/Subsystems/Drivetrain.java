@@ -8,15 +8,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,22 +28,18 @@ public class Drivetrain extends SubsystemBase {
     Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
-    SwerveDriveOdometry odometry;
     ChassisSpeeds m_chassisSpeeds;
     double translationMaxAccelerationMetersPerSecondSquared = 25;
     double rotationMaxAccelerationRadiansPerSecondSquared = 50;
     SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
     SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
     SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
-    private final StructArrayPublisher<SwerveModuleState> statePublisher;
     private Pose pose;
     
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller) {
         IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
         kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
-        odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), getModulePositions());
-        statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
         setDefaultCommand(new DriveFieldRelative(this, controller));
 
         SmartDashboard.putData(calibrate());
@@ -66,7 +56,7 @@ public class Drivetrain extends SubsystemBase {
             this::getPose,
             this::resetPose,
             this::getChasisSpeed,
-            (speeds, feedforwards) -> setModuleTargetStates(speeds),
+            (speeds, feedforwards) -> drive(speeds),
 
             new PPHolonomicDriveController(
                 new PIDConstants(Constants.Drivetrain.SpeedKP, Constants.Drivetrain.SpeedKI, Constants.Drivetrain.SpeedKD),
@@ -142,7 +132,6 @@ public class Drivetrain extends SubsystemBase {
         SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(chassisSpeeds, centerOfRotation);
         SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Constants.attainableMaxModuleSpeedMPS);
         for (int i = 0; i < modules.length; ++i) {
-            targetStates[i].optimize(Rotation2d.fromRotations(modules[i].getModuleAngRotations()));
             modules[i].setTargetState(targetStates[i]);
         }
     }
