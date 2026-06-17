@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Commands.DriveFieldRelative;
 import com.ctre.phoenix6.SignalLogger;
 
@@ -15,10 +18,14 @@ public class Robot extends TimedRobot {
     
     private RobotContainer m_robotContainer;
 
+    private PowerDistribution m_PDH;
+
     @Override
     public void robotInit() {
-        m_robotContainer = new RobotContainer();
         SignalLogger.enableAutoLogging(false);
+        m_robotContainer = new RobotContainer();
+        m_PDH = new PowerDistribution(1, ModuleType.kRev);
+        SmartDashboard.putData("PDH", m_PDH);
     }
 
     @Override
