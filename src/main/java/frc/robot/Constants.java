@@ -52,7 +52,6 @@ public class Constants {
         );
         public static final AprilTagFieldLayout FieldLayout =
             AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
-    }
 
         public static final double SpeedKP = 5, SpeedKI = 0, SpeedKD = 0;
         public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
