@@ -139,13 +139,13 @@ public class Drivetrain extends SubsystemBase {
                     return;
                 }
 
-                if (Math.abs(e.estimatedPose.getZ()) > 0.5 && hasRecievedVisionMeasurement) {
+                if (Math.abs(e.estimatedPose.getZ()) > 0.5) {
                     return;
                 }
 
                 if (e.estimatedPose.toPose2d()
                         .getTranslation()
-                        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5) {
+                        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5 && hasRecievedVisionMeasurement) {
                     return;
                 }
 
