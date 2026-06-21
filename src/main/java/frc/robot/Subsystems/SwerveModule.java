@@ -67,7 +67,7 @@ public class SwerveModule extends SubsystemBase{
         driveMotorConfig.CurrentLimits.SupplyCurrentLowerLimit = Constants.Drivetrain.DriveMotorsLowSupplyCurrentLimit;
         driveMotorConfig.CurrentLimits.SupplyCurrentLowerTime = Constants.Drivetrain.DriveMotorsHighSupplyCurrentSeconds;
         driveMotorConfig.Feedback.SensorToMechanismRatio = 1/DRIVE_POSITION_CONVERSION;
-        driveMotorConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+        driveMotorConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
         driveMotor.getConfigurator().apply(driveMotorConfig);
         driveMotor.setPosition(0);
 
