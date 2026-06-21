@@ -45,7 +45,6 @@ public class Drivetrain extends SubsystemBase {
     Pigeon2 IMU;
     public SwerveModule[] modules;
     SwerveDriveKinematics kinematics;
-    ChassisSpeeds m_chassisSpeeds;
     double translationMaxAccelerationMetersPerSecondSquared = 25;
     double rotationMaxAccelerationRadiansPerSecondSquared = 50;
     SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
