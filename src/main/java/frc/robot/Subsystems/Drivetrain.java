@@ -208,7 +208,7 @@ public class Drivetrain extends SubsystemBase {
 
     public void resetGyro() {
         IMU.reset();
-        poseEstimator.resetPosition(getGyroscopeRotation(), getModulePositions(), getPose());
+        poseEstimator.resetPosition(new Rotation2d(), getModulePositions(), getPose());
     }
 
     private Pose2d getPose() {
