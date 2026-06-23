@@ -87,12 +87,6 @@ public class SwerveModule extends SubsystemBase{
         steerEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
         moduleEncoder.getConfigurator().apply(steerEncoderConfig);
 
-        //controllers
-        //driveController = driveMotor.getPIDController();
-        //driveController.setP(Constants.Modules.SpeedKP);
-        //driveController.setI(Constants.Modules.SpeedKI);
-        //driveController.setD(Constants.Modules.SpeedKD);
-
         steerController = new PIDController(Constants.Drivetrain.SteerDriveKP, Constants.Drivetrain.SteerDriveKI, Constants.Drivetrain.SteerDriveKD);
         steerController.enableContinuousInput(-0.5, 0.5);
 
@@ -100,16 +94,12 @@ public class SwerveModule extends SubsystemBase{
     }
 
     public void setTargetState(SwerveModuleState targetState) {
-        //PID experement
-        //steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
-        //driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
-
         double currentAngle = getModuleAngRotations();
-        // TODO: steer PID on motor controller with external cancoder sensor
+        targetState.optimize(Rotation2d.fromRotations(currentAngle));
         double steerMotorCommand = steerController.calculate(currentAngle, targetState.angle.getRotations());
         steerMotor.set(steerLimiter.calculate(steerMotorCommand));
         // Cosine compensation: drive wheel slower when it's not rotated to the correct position yet
-        targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
+        targetState.speedMetersPerSecond *= targetState.angle.minus(Rotation2d.fromRotations(currentAngle)).getCos();
         driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
     }
 

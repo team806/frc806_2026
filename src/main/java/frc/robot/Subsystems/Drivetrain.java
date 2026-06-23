@@ -12,17 +12,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -51,18 +44,12 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 public class Drivetrain extends SubsystemBase {
     Pigeon2 IMU;
     public SwerveModule[] modules;
-    private final SwerveDriveKinematics kinematics;
-    SwerveDriveOdometry odometry;
-    ChassisSpeeds m_chassisSpeeds;
+    SwerveDriveKinematics kinematics;
     double translationMaxAccelerationMetersPerSecondSquared = 25;
     double rotationMaxAccelerationRadiansPerSecondSquared = 50;
     SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
     SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
     SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
-    private final StructArrayPublisher<SwerveModuleState> statePublisher;
-
-    private final Alert willCalibrateAlert = new Alert("Robot will enter drivetrain calibration when re-enabled", AlertType.kInfo);
-    private final Alert calibratingAlert = new Alert("Drivetrain can be calibrated. Align wheels when disabled and calibrate or cancel", AlertType.kInfo);
 
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(Constants.Drivetrain.FieldLayout, Constants.Drivetrain.RobotToCamera);
@@ -73,8 +60,6 @@ public class Drivetrain extends SubsystemBase {
         IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
         kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
-        odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), getModulePositions());
-        statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
         setDefaultCommand(new DriveFieldRelative(this, controller));
 
         camera = new PhotonCamera(cameraName);
@@ -103,7 +88,7 @@ public class Drivetrain extends SubsystemBase {
             this::getPose,
             this::resetPose,
             this::getChasisSpeed,
-            (speeds, feedforwards) -> setModuleTargetStates(speeds),
+            (speeds, feedforwards) -> drive(speeds),
 
             new PPHolonomicDriveController(
                 new PIDConstants(Constants.Drivetrain.SpeedKP, Constants.Drivetrain.SpeedKI, Constants.Drivetrain.SpeedKD),
@@ -248,7 +233,6 @@ public class Drivetrain extends SubsystemBase {
         SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(chassisSpeeds, centerOfRotation);
         SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Constants.attainableMaxModuleSpeedMPS);
         for (int i = 0; i < modules.length; ++i) {
-            targetStates[i].optimize(Rotation2d.fromRotations(modules[i].getModuleAngRotations()));
             modules[i].setTargetState(targetStates[i]);
         }
     }
