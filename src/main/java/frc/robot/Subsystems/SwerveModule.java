@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.util.sendable.SendableBuilder;
 import frc.robot.Constants;
 
 public class SwerveModule extends SubsystemBase{
@@ -94,6 +95,8 @@ public class SwerveModule extends SubsystemBase{
 
         steerController = new PIDController(Constants.Drivetrain.SteerDriveKP, Constants.Drivetrain.SteerDriveKI, Constants.Drivetrain.SteerDriveKD);
         steerController.enableContinuousInput(-0.5, 0.5);
+
+        SmartDashboard.putData(this);
     }
 
     public void setTargetState(SwerveModuleState targetState) {
@@ -132,7 +135,6 @@ public class SwerveModule extends SubsystemBase{
     @Override
     public void periodic() {
         setAlerts();
-        SmartDashboard.putNumber(SwerveRotationName, getModuleAngRotations());
     }
 
     public void setAlerts() {
@@ -166,5 +168,10 @@ public class SwerveModule extends SubsystemBase{
         return new SwerveModuleState(
             driveMotor.getVelocity().getValueAsDouble(),
             Rotation2d.fromRotations(getModuleAngRotations()));
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty(SwerveRotationName, () -> getModuleAngRotations(), null);
     }
 }

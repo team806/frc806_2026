@@ -268,6 +268,25 @@ public class Drivetrain extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        //add elastic swerve widget
+        builder.setSmartDashboardType("SwerveDrive");
+
+        var frontLeftModule = modules[1];
+        var frontRightModule = modules[0];
+        var backLeftModule = modules[2];
+        var backRightModule = modules[3];
+    
+        builder.addDoubleProperty("Front Left Angle", () -> frontLeftModule.getModulePosition().angle.getRadians(), null);
+        builder.addDoubleProperty("Front Left Velocity", () -> frontLeftModule.getSwerveModuleState().speedMetersPerSecond, null);
+
+        builder.addDoubleProperty("Front Right Angle", () -> frontRightModule.getModulePosition().angle.getRadians(), null);
+        builder.addDoubleProperty("Front Right Velocity", () -> frontRightModule.getSwerveModuleState().speedMetersPerSecond, null);
+
+        builder.addDoubleProperty("Back Left Angle", () -> backLeftModule.getModulePosition().angle.getRadians(), null);
+        builder.addDoubleProperty("Back Left Velocity", () -> backLeftModule.getSwerveModuleState().speedMetersPerSecond, null);
+
+        builder.addDoubleProperty("Back Right Angle", () -> backRightModule.getModulePosition().angle.getRadians(), null);
+        builder.addDoubleProperty("Back Right Velocity", () -> backRightModule.getSwerveModuleState().speedMetersPerSecond, null);
+
+        builder.addDoubleProperty("Robot Angle", () -> getGyroscopeRotation().getRadians(), null);
     }
 }
