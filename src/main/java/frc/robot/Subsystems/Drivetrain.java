@@ -134,6 +134,8 @@ public class Drivetrain extends SubsystemBase {
 
             visionEstimate.ifPresent(e -> {
                 var targets = e.targetsUsed;
+                Pose2d estPose = e.estimatedPose.toPose2d();
+                
                 if ((targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) ||
                         targets.size() == 0) {
                     return;
@@ -143,15 +145,19 @@ public class Drivetrain extends SubsystemBase {
                     return;
                 }
 
-                if (e.estimatedPose.toPose2d()
-                        .getTranslation()
-                        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5 && hasRecievedVisionMeasurement) {
+                if (estPose.getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5 && 
+                    hasRecievedVisionMeasurement) {
                     return;
                 }
 
-                Matrix<N3, N1> stdDevs = getStdDevs(e, result.getTargets());
-                poseEstimator.addVisionMeasurement(e.estimatedPose.toPose2d(), e.timestampSeconds, stdDevs);
-                hasRecievedVisionMeasurement = true;
+                if (!hasRecievedVisionMeasurement) {
+                    poseEstimator.resetPose(estPose);
+                    hasRecievedVisionMeasurement = true;
+                    return;
+                }
+
+                Matrix<N3, N1> stdDevs = getStdDevs(e, targets);
+                poseEstimator.addVisionMeasurement(estPose, e.timestampSeconds, stdDevs);
 
                 double lag = Timer.getFPGATimestamp() - e.timestampSeconds;
                 SmartDashboard.putNumber("Vision/MeasurementLag_s", lag);
