@@ -53,8 +53,8 @@ public class DriveFieldRelative extends Command {
 
         swerve.driveFieldRelative(
         new ChassisSpeeds(
-            (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
-            (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+            -(y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+            -(x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
             -(theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor
         ));
     }

@@ -54,6 +54,7 @@ public class Drivetrain extends SubsystemBase {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator photonEstimator = new PhotonPoseEstimator(Constants.Drivetrain.FieldLayout, Constants.Drivetrain.RobotToCamera);
     private final SwerveDrivePoseEstimator poseEstimator;
+    private boolean hasRecievedVisionMeasurement;
     private final Field2d field = new Field2d();
     
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller, String cameraName) {
@@ -72,6 +73,8 @@ public class Drivetrain extends SubsystemBase {
             // We calculate these upon update provide those real details 
             VecBuilder.fill(999999, 999999, 999999)
         );
+
+        hasRecievedVisionMeasurement = false;
 
         SmartDashboard.putData("Field", field);
         SmartDashboard.putData(calibrate());
@@ -116,6 +119,8 @@ public class Drivetrain extends SubsystemBase {
 
             visionEstimate.ifPresent(e -> {
                 var targets = e.targetsUsed;
+                Pose2d estPose = e.estimatedPose.toPose2d();
+                
                 if ((targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) ||
                         targets.size() == 0) {
                     return;
@@ -125,14 +130,19 @@ public class Drivetrain extends SubsystemBase {
                     return;
                 }
 
-                if (e.estimatedPose.toPose2d()
-                        .getTranslation()
-                        .getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5) {
+                if (estPose.getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5 && 
+                    hasRecievedVisionMeasurement) {
                     return;
                 }
 
-                Matrix<N3, N1> stdDevs = getStdDevs(e, result.getTargets());
-                poseEstimator.addVisionMeasurement(e.estimatedPose.toPose2d(), e.timestampSeconds, stdDevs);
+                if (!hasRecievedVisionMeasurement) {
+                    poseEstimator.resetPose(estPose);
+                    hasRecievedVisionMeasurement = true;
+                    return;
+                }
+
+                Matrix<N3, N1> stdDevs = getStdDevs(e, targets);
+                poseEstimator.addVisionMeasurement(estPose, e.timestampSeconds, stdDevs);
 
                 double lag = Timer.getFPGATimestamp() - e.timestampSeconds;
                 SmartDashboard.putNumber("Vision/MeasurementLag_s", lag);
@@ -189,6 +199,7 @@ public class Drivetrain extends SubsystemBase {
 
     public void resetGyro() {
         IMU.reset();
+        poseEstimator.resetPosition(new Rotation2d(), getModulePositions(), getPose());
     }
 
     private Pose2d getPose() {
@@ -196,7 +207,9 @@ public class Drivetrain extends SubsystemBase {
     }
 
     private void resetPose(Pose2d pose) {
-        // Vision system reliably gives starting pose, so we ignore this one
+        if (!hasRecievedVisionMeasurement) {
+            poseEstimator.resetPose(pose);
+        }
     }
     
     public Command calibrate() {
