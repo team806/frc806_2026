@@ -5,27 +5,33 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
 
+import frc.robot.Commands.ArmIndexerState;
+import frc.robot.Commands.ArmState;
+import frc.robot.Commands.IndexerState;
+
+import frc.robot.Subsystems.Arm;
+import frc.robot.Subsystems.Indexer;
 import frc.robot.Constants;
 
 public class Blinkin extends SubsystemBase {
     private final PWMSparkMax blinkin;
-    private final Constants.Blinkin.SolidColors defaultColor;
+    private final double defaultColorValue;
 
-    public Blinkin(int PWMslot, Constants.Blinkin.SolidColors defaultColor) {
-        this.defaultColor = defaultColor;
+    public Blinkin(int PWMslot, double defaultColorValue, Arm arm, Indexer indexer) {
+        this.defaultColorValue = defaultColorValue;
         blinkin = new PWMSparkMax(PWMslot);
-        setDefaultCommand(setDefaultColor());
+        setDefaultCommand(new ArmIndexerState(arm, indexer, this));
     }
 
-    public Command setDefaultColor() {
-        return run(() -> blinkin.set(defaultColor.value));
+    public void setDefaultColor() {
+        blinkin.set(defaultColorValue);
     }
 
-    public Command setColor(Constants.Blinkin.SolidColors color) {
-        return run(() -> blinkin.set(color.value));
+    public void setColor(double colorValue) {
+        blinkin.set(colorValue);
     }
 
-    public Command turnOffLEDs() {
-        return run(() -> blinkin.set(Constants.Blinkin.SolidColors.BLACK.value));
+    public void turnOffLEDs() {
+        blinkin.set(Constants.Blinkin.SolidColors.BLACK.value);
     }
 }

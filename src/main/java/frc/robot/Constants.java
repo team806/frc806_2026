@@ -91,6 +91,7 @@ public class Constants {
         public static final int TopRollerID = 16;
         public static final double ceilingIdleVoltage = 2.4;
         public static final double ceilingIndexVoltage = 8.4;
+        public enum States {Backwards, Forwards, Stopped;}
     }
 
     public interface Shooter {
@@ -116,11 +117,11 @@ public class Constants {
         public static final double kD = 0;
         public static final double MotionMagicCruiseVelocity = 75;
         public static final double MotionMagicAcceleration = 2;
-        public static final double ArmBottomPos = 0;
-        public static final double ArmHorizontalPos = 0;
+        public static final double ArmDeployPos = 0;
         public static final double ArmVerticalPos = 0.12;
         public static final double ArmBackPos = 0.345;
         public static final double GearRatio = 23.0;
+        public enum States {Deployed, Deployed_Vertical, Vertical, Vertical_Back, Back;}
     }
 
     public interface Intake {
@@ -160,6 +161,34 @@ public class Constants {
 
             public final double value;
             SolidColors(double value) {this.value = value;}
+        }
+
+        public enum Strobe {
+            RED(-0.11),
+            BLUE(-0.09),
+            GOLD(-0.07),
+            WHITE(-0.05),
+            COLOR1(0.15),
+            COLOR2(0.35);
+
+            public final double value;
+            Strobe(double value) {this.value = value;}
+        }
+
+        public enum Heartbeat {
+            RED(-0.25),
+            BLUE(-0.23),
+            WHITE(-0.21),
+            GRAY(-0.19),
+            COLOR1SLOW(0.03),
+            COLOR1MEDIUM(0.05),
+            COLOR1FAST(0.07),
+            COLOR2SLOW(0.23),
+            COLOR2MEDIUM(0.25),
+            COLOR2FAST(0.27);
+
+            public final double value;
+            Heartbeat(double value) {this.value = value;}
         }
     }
 }
