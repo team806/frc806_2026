@@ -10,7 +10,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Commands.DriveFieldRelative;
+import edu.wpi.first.wpilibj.DataLogManager;
+import edu.wpi.first.wpilibj.DriverStation;
 import com.ctre.phoenix6.SignalLogger;
 
 public class Robot extends TimedRobot {
@@ -23,7 +24,12 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         SignalLogger.enableAutoLogging(false);
+
+        DataLogManager.start();
+        DriverStation.startDataLog(DataLogManager.getLog());
+
         m_robotContainer = new RobotContainer();
+
         m_PDH = new PowerDistribution(1, ModuleType.kRev);
         SmartDashboard.putData("PDH", m_PDH);
     }
