@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.Sendable;
 import frc.robot.Subsystems.Drivetrain;
 import frc.robot.Subsystems.Indexer;
 import frc.robot.Subsystems.Shooter;
@@ -21,7 +23,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import frc.robot.Subsystems.Arm;
 import frc.robot.Subsystems.Blinkin;
 
-public class RobotContainer {
+public class RobotContainer implements Sendable{
     public CommandXboxController driveController = new CommandXboxController(0);
     CommandXboxController coDriveController = new CommandXboxController(1);
     CommandXboxController ohShitController = new CommandXboxController(2);
@@ -72,5 +74,15 @@ public class RobotContainer {
 
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addBooleanProperty("Drivetrain enabled", drivetrain::getIsEnabled, (newVal) -> drivetrain.toggle(newVal));
+        builder.addBooleanProperty("Indexer enabled", indexer::getIsEnabled, (newVal) -> indexer.toggle(newVal));
+        builder.addBooleanProperty("Shooter enabled", shooter::getIsEnabled, (newVal) -> shooter.toggle(newVal));
+        builder.addBooleanProperty("Intake enabled", intake::getIsEnabled, (newVal) -> intake.toggle(newVal));
+        builder.addBooleanProperty("Arm enabled", arm::getIsEnabled, (newVal) -> arm.toggle(newVal));
+        builder.addBooleanProperty("Blinkin enabled", blinkin::getIsEnabled, (newVal) -> blinkin.toggle(newVal));
     }
 }

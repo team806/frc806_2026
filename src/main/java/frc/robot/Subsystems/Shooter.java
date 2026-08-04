@@ -2,6 +2,9 @@ package frc.robot.Subsystems;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -29,6 +32,9 @@ public class Shooter extends SubsystemBase {
     private final Alert shooterGoodAlert = new Alert("Shooter at target speed!", AlertType.kInfo);
     private final Alert shooterBadAlert = new Alert("Shooter not at target speed!", AlertType.kWarning);
 
+    private boolean enabled = true;
+    private Command defaultCommand = shoot();
+
     @SuppressWarnings("removal")
     public Shooter(int MotorID) {
         shooter = new SparkFlex(MotorID, MotorType.kBrushless);
@@ -41,7 +47,7 @@ public class Shooter extends SubsystemBase {
 
         SmartDashboard.putData("Shooter subsystem", this);
 
-        setDefaultCommand(shoot());
+        setDefaultCommand(defaultCommand);
     }
 
     // _If_ we need a third state where motor does not turn, turn off the motor
@@ -106,6 +112,34 @@ public class Shooter extends SubsystemBase {
 
     public double getRPM() {
         return shootRPS * 60.0;
+    }
+
+    public Command doNothing() {
+        return Commands.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public boolean getIsEnabled() {
+        return enabled;
+    }
+
+    public void enable() {
+        setDefaultCommand(defaultCommand);
+        enabled = true;
+    }
+
+    public void disable() {
+        CommandScheduler.getInstance().requiring(this).cancel();
+        setDefaultCommand(doNothing());
+        enabled = false;
+    }
+
+    public void toggle(boolean targetState) {
+        if (targetState) {
+            enable();
+        }
+        else {
+            disable();
+        }
     }
 
     @Override

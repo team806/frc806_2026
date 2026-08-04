@@ -22,6 +22,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 
 import java.util.List;
@@ -57,12 +61,17 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private boolean hasRecievedVisionMeasurement;
     private final Field2d field = new Field2d();
+
+    private boolean enabled = true;
+    private Command defaultCommand;
     
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller, String cameraName) {
         IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
         kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
-        setDefaultCommand(new DriveFieldRelative(this, controller));
+
+        defaultCommand = new DriveFieldRelative(this, controller);
+        setDefaultCommand(defaultCommand);
 
         camera = new PhotonCamera(cameraName);
         poseEstimator = new SwerveDrivePoseEstimator(
@@ -275,6 +284,34 @@ public class Drivetrain extends SubsystemBase {
             modules[2].getSwerveModuleState(),
             modules[3].getSwerveModuleState()
         );
+    }
+
+    public Command doNothing() {
+        return Commands.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public boolean getIsEnabled() {
+        return enabled;
+    }
+
+    public void enable() {
+        setDefaultCommand(defaultCommand);
+        enabled = true;
+    }
+
+    public void disable() {
+        CommandScheduler.getInstance().requiring(this).cancel();
+        setDefaultCommand(doNothing());
+        enabled = false;
+    }
+
+    public void toggle(boolean targetState) {
+        if (targetState) {
+            enable();
+        }
+        else {
+            disable();
+        }
     }
 
     @Override

@@ -3,6 +3,9 @@ package frc.robot.Subsystems;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -14,6 +17,8 @@ import frc.robot.Constants;
 public class Indexer extends SubsystemBase {
     private final SparkFlex topRoller;
     private Constants.Indexer.States indexerState;
+    private boolean enabled = true;
+    private Command defaultCommand = idleIndex();
 
     @SuppressWarnings("removal")
     public Indexer(int topRollerID) {
@@ -29,7 +34,7 @@ public class Indexer extends SubsystemBase {
 
         SmartDashboard.putData("Indexer subsystem", this);
 
-        setDefaultCommand(idleIndex());
+        setDefaultCommand(defaultCommand);
     }
 
     public Command idleIndex() {
@@ -58,6 +63,34 @@ public class Indexer extends SubsystemBase {
 
     public Constants.Indexer.States getState() {
         return indexerState;
+    }
+
+    public Command doNothing() {
+        return Commands.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public boolean getIsEnabled() {
+        return enabled;
+    }
+
+    public void enable() {
+        setDefaultCommand(defaultCommand);
+        enabled = true;
+    }
+
+    public void disable() {
+        CommandScheduler.getInstance().requiring(this).cancel();
+        setDefaultCommand(doNothing());
+        enabled = false;
+    }
+
+    public void toggle(boolean targetState) {
+        if (targetState) {
+            enable();
+        }
+        else {
+            disable();
+        }
     }
 
     @Override

@@ -14,7 +14,10 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.Constants;
@@ -25,6 +28,8 @@ public class Arm extends SubsystemBase {
     private final CANcoder armEncoder;
     private final MotionMagicVoltage request = new MotionMagicVoltage(0);
     private Constants.Arm.States armTargetState;
+    private boolean enabled = true;
+    private Command defaultCommand = deploy();
 
     @SuppressWarnings("removal")
     public Arm(int ArmLeaderId, int ArmFollowerId) {
@@ -72,7 +77,7 @@ public class Arm extends SubsystemBase {
 
         SmartDashboard.putData("Arm subsystem", this);
 
-        setDefaultCommand(deploy());
+        setDefaultCommand(defaultCommand);
     }
 
 
@@ -131,6 +136,34 @@ public class Arm extends SubsystemBase {
             return Constants.Arm.States.Vertical_Back;
         }
         return armTargetState;
+    }
+
+    public Command doNothing() {
+        return Commands.idle().withInterruptBehavior(InterruptionBehavior.kCancelIncoming);
+    }
+
+    public boolean getIsEnabled() {
+        return enabled;
+    }
+
+    public void enable() {
+        setDefaultCommand(defaultCommand);
+        enabled = true;
+    }
+
+    public void disable() {
+        CommandScheduler.getInstance().requiring(this).cancel();
+        setDefaultCommand(doNothing());
+        enabled = false;
+    }
+
+    public void toggle(boolean targetState) {
+        if (targetState) {
+            enable();
+        }
+        else {
+            disable();
+        }
     }
 
     @Override
