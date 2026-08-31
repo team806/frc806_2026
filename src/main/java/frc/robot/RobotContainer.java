@@ -30,7 +30,7 @@ public class RobotContainer {
     private final Trigger drivekLeftBumper = driveController.leftBumper();
     private final Trigger drivekRightBumper = driveController.rightBumper();
 
-    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController, Constants.Drivetrain.CameraName);
+    public final Drivetrain drivetrain = new Drivetrain(Constants.Drivetrain.moduleArray, driveController);
     
     public final Indexer indexer = new Indexer(Constants.Indexer.TopRollerID);
     public final Shooter shooter = new Shooter(Constants.Shooter.MotorID);
