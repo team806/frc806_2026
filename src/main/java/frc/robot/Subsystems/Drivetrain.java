@@ -34,6 +34,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import frc.robot.Constants;
 import frc.robot.Commands.DriveFieldRelative;
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -57,7 +60,24 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private boolean hasRecievedVisionMeasurement;
     private final Field2d field = new Field2d();
-    
+
+    private final StructArrayPublisher<SwerveModuleState> measuredSwerveStatesPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructArrayTopic("Measured Swerve States", SwerveModuleState.struct)
+          .publish();
+    private final StructArrayPublisher<SwerveModuleState> desiredSwerveStatesPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructArrayTopic("Desired Swerve States", SwerveModuleState.struct)
+          .publish();
+    private final StructPublisher<ChassisSpeeds> measuredSpeedsPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Measured Speeds", ChassisSpeeds.struct)
+          .publish();
+        private final StructPublisher<ChassisSpeeds> desiredSpeedsPublisher =
+      NetworkTableInstance.getDefault()
+          .getStructTopic("Desired Speeds", ChassisSpeeds.struct)
+          .publish();
+
     public Drivetrain(SwerveModule[] modules, CommandXboxController controller, String cameraName) {
         IMU = new Pigeon2(Constants.PigeonID, new CANBus("*"));
         this.modules = modules;
@@ -164,8 +184,10 @@ public class Drivetrain extends SubsystemBase {
         }
 
         poseEstimator.update(getGyroscopeRotation(), getModulePositions());
-
         field.setRobotPose(poseEstimator.getEstimatedPosition());
+
+        measuredSpeedsPublisher.set(getChasisSpeed());
+        measuredSwerveStatesPublisher.set(getModuleStates());
     }
 
     private Matrix<N3, N1> getStdDevs(EstimatedRobotPose estimatedPose, List<PhotonTrackedTarget> targets) {
@@ -257,8 +279,10 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public void setModuleTargetStates(ChassisSpeeds chassisSpeeds, Translation2d centerOfRotation) {
+        desiredSpeedsPublisher.set(chassisSpeeds);
         SwerveModuleState[] targetStates = kinematics.toSwerveModuleStates(chassisSpeeds, centerOfRotation);
         SwerveDriveKinematics.desaturateWheelSpeeds(targetStates, Constants.attainableMaxModuleSpeedMPS);
+        desiredSwerveStatesPublisher.set(targetStates);
         for (int i = 0; i < modules.length; ++i) {
             modules[i].setTargetState(targetStates[i]);
         }
@@ -268,12 +292,16 @@ public class Drivetrain extends SubsystemBase {
         return new SwerveModulePosition[] {modules[0].getModulePosition(),modules[1].getModulePosition(),modules[2].getModulePosition(),modules[3].getModulePosition()};
     }
 
+    public SwerveModuleState[] getModuleStates() {
+        return new SwerveModuleState[] {modules[0].getModuleState(),modules[1].getModuleState(),modules[2].getModuleState(),modules[3].getModuleState()};
+    }
+
     public ChassisSpeeds getChasisSpeed() {
         return kinematics.toChassisSpeeds(
-            modules[0].getSwerveModuleState(),
-            modules[1].getSwerveModuleState(),
-            modules[2].getSwerveModuleState(),
-            modules[3].getSwerveModuleState()
+            modules[0].getModuleState(),
+            modules[1].getModuleState(),
+            modules[2].getModuleState(),
+            modules[3].getModuleState()
         );
     }
 
@@ -281,22 +309,22 @@ public class Drivetrain extends SubsystemBase {
     public void initSendable(SendableBuilder builder) {
         builder.setSmartDashboardType("SwerveDrive");
 
-        var frontLeftModule = modules[1];
-        var frontRightModule = modules[0];
+        var frontLeftModule = modules[0];
+        var frontRightModule = modules[1];
         var backLeftModule = modules[2];
         var backRightModule = modules[3];
     
         builder.addDoubleProperty("Front Left Angle", () -> frontLeftModule.getModulePosition().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Left Velocity", () -> frontLeftModule.getSwerveModuleState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Front Left Velocity", () -> frontLeftModule.getModuleState().speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Front Right Angle", () -> frontRightModule.getModulePosition().angle.getRadians(), null);
-        builder.addDoubleProperty("Front Right Velocity", () -> frontRightModule.getSwerveModuleState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Front Right Velocity", () -> frontRightModule.getModuleState().speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Back Left Angle", () -> backLeftModule.getModulePosition().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Left Velocity", () -> backLeftModule.getSwerveModuleState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Back Left Velocity", () -> backLeftModule.getModuleState().speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Back Right Angle", () -> backRightModule.getModulePosition().angle.getRadians(), null);
-        builder.addDoubleProperty("Back Right Velocity", () -> backRightModule.getSwerveModuleState().speedMetersPerSecond, null);
+        builder.addDoubleProperty("Back Right Velocity", () -> backRightModule.getModuleState().speedMetersPerSecond, null);
 
         builder.addDoubleProperty("Robot Angle", () -> getGyroscopeRotation().getRadians(), null);
     }
