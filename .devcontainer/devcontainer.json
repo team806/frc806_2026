@@ -1,11 +1,19 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/universal:2",
-  "postCreateCommand": "cd /opt && wget 'https://github.com/wpilibsuite/vscode-wpilib/releases/download/v2026.2.1/vscode-wpilib-2026.2.1.vsix'",
-  "features": {
-  },
+  "image": "mcr.microsoft.com/devcontainers/java:1-17",
+  "onCreateCommand": "sudo wget -q -O /opt/vscode-wpilib.vsix https://github.com/wpilibsuite/vscode-wpilib/releases/download/v2026.2.1/vscode-wpilib-2026.2.1.vsix",
   "customizations": {
     "vscode": {
-      "extensions": ["/opt/vscode-wpilib-2026.2.1.vsix","vscjava.vscode-java-pack","vscjava.vscode-gradle"]
+      "extensions": [
+        "/opt/vscode-wpilib.vsix",
+        "vscjava.vscode-java-pack",
+        "vscjava.vscode-gradle"
+      ],
+      "settings": {
+        "java.import.gradle.java.home": "/usr/lib/jvm/msopenjdk-current",
+        "java.configuration.runtimes": [
+          { "name": "JavaSE-17", "path": "/usr/lib/jvm/msopenjdk-current", "default": true }
+        ]
+      }
     }
   }
 }
