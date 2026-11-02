@@ -16,8 +16,10 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -60,6 +62,8 @@ public class Drivetrain extends SubsystemBase {
     private final SwerveDrivePoseEstimator poseEstimator;
     private boolean hasRecievedVisionMeasurement;
     private final Field2d field = new Field2d();
+    
+    Alert pigeonNotConnectedAlert = new Alert("Pigeon disconnected!", AlertType.kError);
 
     private final StructArrayPublisher<SwerveModuleState> measuredSwerveStatesPublisher =
       NetworkTableInstance.getDefault()
@@ -110,6 +114,7 @@ public class Drivetrain extends SubsystemBase {
         });
 
         SmartDashboard.putData(calibrate());
+        SmartDashboard.putData(resetVisionFilter());
         SmartDashboard.putData(this);
 
         RobotConfig config = null;
@@ -118,7 +123,7 @@ public class Drivetrain extends SubsystemBase {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        
         AutoBuilder.configure(
             this::getPose,
             this::resetPose,
@@ -154,20 +159,23 @@ public class Drivetrain extends SubsystemBase {
                 Pose2d estPose = e.estimatedPose.toPose2d();
                 field.getObject("vision pose").setPose(estPose);
                 
-                if ((targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) ||
-                        targets.size() == 0) {
+                //single tag ambiguity or no targets
+                if ((targets.size() == 1 && targets.get(0).getPoseAmbiguity() > 0.2) || targets.size() == 0) {
                     return;
                 }
 
+                //flying
                 if (Math.abs(e.estimatedPose.getZ()) > 0.5) {
                     return;
                 }
 
-                if (estPose.getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > 0.5 && 
-                    hasRecievedVisionMeasurement) {
+                //teleportation
+                boolean teleported = estPose.getTranslation().getDistance(poseEstimator.getEstimatedPosition().getTranslation()) > Constants.Drivetrain.TeleportationFilter;
+                if (teleported && hasRecievedVisionMeasurement) {
                     return;
                 }
 
+                //intial snap
                 if (!hasRecievedVisionMeasurement) {
                     poseEstimator.resetPose(estPose);
                     hasRecievedVisionMeasurement = true;
@@ -186,6 +194,7 @@ public class Drivetrain extends SubsystemBase {
         poseEstimator.update(getGyroscopeRotation(), getModulePositions());
         field.setRobotPose(poseEstimator.getEstimatedPosition());
 
+        pigeonNotConnectedAlert.set(!IMU.isConnected());
         measuredSpeedsPublisher.set(getChasisSpeed());
         measuredSwerveStatesPublisher.set(getModuleStates());
     }
@@ -214,10 +223,12 @@ public class Drivetrain extends SubsystemBase {
             if (numTags > 1) {
                 estStdDevs = Constants.Drivetrain.MultiTagStdDevs;
             } 
-            // Increase std devs based on (average) distance
+            // Max std devs if only one far away tag
             if (numTags == 1 && avgDist > 4) {
                 estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-            } else {
+            }
+            // Scale std devs based on average distance
+            else {
                 estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
             }
         }
@@ -230,12 +241,12 @@ public class Drivetrain extends SubsystemBase {
     }
 
     public Rotation2d getGyroscopeRotation() {
-        return Rotation2d.fromDegrees(IMU.getYaw().getValueAsDouble());
+        return IMU.getRotation2d();
     }
 
     public void resetGyro() {
         IMU.reset();
-        poseEstimator.resetPosition(new Rotation2d(), getModulePositions(), getPose());
+        poseEstimator.resetPosition(new Rotation2d(), getModulePositions(), new Pose2d(poseEstimator.getEstimatedPosition().getTranslation(), new Rotation2d()));
     }
 
     private Pose2d getPose() {
@@ -247,6 +258,12 @@ public class Drivetrain extends SubsystemBase {
             poseEstimator.resetPose(pose);
         }
     }
+
+    public Command resetVisionFilter() {
+        return runOnce(
+            () -> hasRecievedVisionMeasurement = false
+        ).ignoringDisable(true).withName("Reset Vision Filter");
+    }
     
     public Command calibrate() {
         return parallel(
@@ -255,7 +272,7 @@ public class Drivetrain extends SubsystemBase {
             modules[1].calibrate(),
             modules[2].calibrate(),
             modules[3].calibrate()
-        ).ignoringDisable(true).withName("Calibrating");
+        ).ignoringDisable(true).withName("Calibrate");
     }
 
     public void drive(ChassisSpeeds chassisSpeeds) {

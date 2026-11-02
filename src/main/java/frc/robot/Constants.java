@@ -46,6 +46,8 @@ public class Constants {
             public static final double AngleStdDev = 0.05;
         }
 
+        public static final double TeleportationFilter = 5;
+
         public static final Transform3d RobotToCamera = new Transform3d(
             new Translation3d(0.0889, -0.00635, 0.47625),
             new Rotation3d(0, 0, 0)
